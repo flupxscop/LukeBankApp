@@ -2,6 +2,10 @@
 
 Premium-style iOS banking app built with SwiftUI and mock data.
 
+## Screenshots
+![Sample](assets/Sample_UI.png)
+
+
 ## Features
 - Dashboard
 - Cards
