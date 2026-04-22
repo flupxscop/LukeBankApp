@@ -4,7 +4,7 @@ Premium-style iOS banking app built with SwiftUI and mock data.
 
 ## Screenshots
 <p align="center">
-  <img src="assets/Sample_UI.png" width="250"/>
+  <img src="assets/Sample_UI.png" width="450"/>
 </p>
 
 
