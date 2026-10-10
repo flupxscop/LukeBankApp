@@ -25,7 +25,7 @@ class SecretHasher(
     /** Used to spend the same time when a user does not exist (timing side channel). */
     private val dummyHash: String by lazy { hashSecret("dummy-secret-for-timing") }
 
-    fun hashSecret(secret: String): String = argon2.encode(hmacHex(properties.pepper, secret))
+    fun hashSecret(secret: String): String = checkNotNull(argon2.encode(hmacHex(properties.pepper, secret)))
 
     fun matchesSecret(
         secret: String,

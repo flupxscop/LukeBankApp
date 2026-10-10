@@ -1,6 +1,5 @@
 package com.luxebank.audit
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.luxebank.common.tracing.TraceIdFilter
 import org.slf4j.MDC
 import org.springframework.jdbc.core.JdbcTemplate
@@ -9,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import tools.jackson.databind.ObjectMapper
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.temporal.ChronoUnit

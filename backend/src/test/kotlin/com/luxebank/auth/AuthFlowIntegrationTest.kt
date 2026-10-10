@@ -1,7 +1,5 @@
 package com.luxebank.auth
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.luxebank.TestcontainersConfiguration
 import com.luxebank.common.security.SecretHasher
 import com.luxebank.users.User
@@ -10,8 +8,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.jdbc.core.JdbcTemplate
@@ -22,6 +20,8 @@ import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 import java.util.UUID
 
 @SpringBootTest
@@ -58,11 +58,11 @@ class AuthFlowIntegrationTest(
     fun `full registration then PIN login, refresh and logout`() {
         val key = TestDeviceKey()
         val session = registerDevice(key)
-        val deviceId = UUID.fromString(session["deviceId"].asText())
+        val deviceId = UUID.fromString(session["deviceId"].asString())
 
         mockMvc
             .get("/api/v1/me") {
-                bearer(session["accessToken"].asText())
+                bearer(session["accessToken"].asString())
                 header("Accept-Language", "en")
             }.andExpect {
                 status { isOk() }
@@ -72,13 +72,13 @@ class AuthFlowIntegrationTest(
 
         val login = loginWithPin(key, deviceId, pin).andExpect { status { isOk() } }.json()
         val refreshed =
-            post("/api/v1/auth/refresh", mapOf("refreshToken" to login["refreshToken"].asText()))
+            post("/api/v1/auth/refresh", mapOf("refreshToken" to login["refreshToken"].asString()))
                 .andExpect { status { isOk() } }
                 .json()
-        assertThat(refreshed["refreshToken"].asText()).isNotEqualTo(login["refreshToken"].asText())
+        assertThat(refreshed["refreshToken"].asString()).isNotEqualTo(login["refreshToken"].asString())
 
-        mockMvc.post("/api/v1/auth/logout") { bearer(refreshed["accessToken"].asText()) }.andExpect { status { isNoContent() } }
-        post("/api/v1/auth/refresh", mapOf("refreshToken" to refreshed["refreshToken"].asText()))
+        mockMvc.post("/api/v1/auth/logout") { bearer(refreshed["accessToken"].asString()) }.andExpect { status { isNoContent() } }
+        post("/api/v1/auth/refresh", mapOf("refreshToken" to refreshed["refreshToken"].asString()))
             .andExpect { status { isUnauthorized() } }
         post("/api/v1/auth/challenge", mapOf("deviceId" to deviceId)).andExpect {
             status { isNotFound() }
@@ -143,8 +143,7 @@ class AuthFlowIntegrationTest(
                 keyBase64 = "BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
                 pin = pin,
             ),
-        )
-            .andExpect { jsonPath("$.error.code") { value("INVALID_DEVICE_KEY") } }
+        ).andExpect { jsonPath("$.error.code") { value("INVALID_DEVICE_KEY") } }
     }
 
     @Test
@@ -153,23 +152,23 @@ class AuthFlowIntegrationTest(
         val oldSession = registerDevice(oldKey)
         registerDevice(TestDeviceKey())
 
-        post("/api/v1/auth/challenge", mapOf("deviceId" to oldSession["deviceId"].asText()))
+        post("/api/v1/auth/challenge", mapOf("deviceId" to oldSession["deviceId"].asString()))
             .andExpect { jsonPath("$.error.code") { value("DEVICE_NOT_FOUND") } }
-        post("/api/v1/auth/refresh", mapOf("refreshToken" to oldSession["refreshToken"].asText()))
+        post("/api/v1/auth/refresh", mapOf("refreshToken" to oldSession["refreshToken"].asString()))
             .andExpect { status { isUnauthorized() } }
     }
 
     @Test
     fun `login needs a signature from the bound device key`() {
         val key = TestDeviceKey()
-        val deviceId = UUID.fromString(registerDevice(key)["deviceId"].asText())
+        val deviceId = UUID.fromString(registerDevice(key)["deviceId"].asString())
         loginWithPin(TestDeviceKey(), deviceId, pin).andExpect { jsonPath("$.error.code") { value("SIGNATURE_INVALID") } }
     }
 
     @Test
     fun `challenge cannot be replayed`() {
         val key = TestDeviceKey()
-        val deviceId = UUID.fromString(registerDevice(key)["deviceId"].asText())
+        val deviceId = UUID.fromString(registerDevice(key)["deviceId"].asString())
         val challenge = challenge(deviceId)
         val body =
             mapOf(
@@ -187,7 +186,7 @@ class AuthFlowIntegrationTest(
     fun `five wrong pins lock the device and revoke its sessions`() {
         val key = TestDeviceKey()
         val session = registerDevice(key)
-        val deviceId = UUID.fromString(session["deviceId"].asText())
+        val deviceId = UUID.fromString(session["deviceId"].asString())
         repeat(4) { attempt ->
             loginWithPin(key, deviceId, "908172").andExpect {
                 jsonPath("$.error.code") { value("PIN_INVALID") }
@@ -196,14 +195,14 @@ class AuthFlowIntegrationTest(
         }
         loginWithPin(key, deviceId, "908172").andExpect { jsonPath("$.error.code") { value("PIN_LOCKED") } }
         loginWithPin(key, deviceId, pin).andExpect { jsonPath("$.error.code") { value("PIN_LOCKED") } }
-        post("/api/v1/auth/refresh", mapOf("refreshToken" to session["refreshToken"].asText())).andExpect { status { isUnauthorized() } }
+        post("/api/v1/auth/refresh", mapOf("refreshToken" to session["refreshToken"].asString())).andExpect { status { isUnauthorized() } }
     }
 
     @Test
     fun `reusing a refresh token revokes the whole family`() {
         val session = registerDevice(TestDeviceKey())
-        val first = session["refreshToken"].asText()
-        val second = post("/api/v1/auth/refresh", mapOf("refreshToken" to first)).json()["refreshToken"].asText()
+        val first = session["refreshToken"].asString()
+        val second = post("/api/v1/auth/refresh", mapOf("refreshToken" to first)).json()["refreshToken"].asString()
 
         post("/api/v1/auth/refresh", mapOf("refreshToken" to first)).andExpect { status { isUnauthorized() } }
         post("/api/v1/auth/refresh", mapOf("refreshToken" to second)).andExpect { status { isUnauthorized() } }
@@ -214,19 +213,19 @@ class AuthFlowIntegrationTest(
         val deviceKey = TestDeviceKey()
         val biometricKey = TestDeviceKey()
         val session = registerDevice(deviceKey)
-        val deviceId = UUID.fromString(session["deviceId"].asText())
+        val deviceId = UUID.fromString(session["deviceId"].asString())
 
         loginWithBiometric(biometricKey, deviceId).andExpect { jsonPath("$.error.code") { value("BIOMETRIC_NOT_ENABLED") } }
         mockMvc
             .put("/api/v1/auth/biometric") {
-                bearer(session["accessToken"].asText())
+                bearer(session["accessToken"].asString())
                 jsonBody(mapOf("biometricPublicKey" to biometricKey.base64))
             }.andExpect { status { isNoContent() } }
 
         loginWithBiometric(deviceKey, deviceId).andExpect { jsonPath("$.error.code") { value("SIGNATURE_INVALID") } }
         loginWithBiometric(biometricKey, deviceId).andExpect { status { isOk() } }
 
-        mockMvc.delete("/api/v1/auth/biometric") { bearer(session["accessToken"].asText()) }.andExpect { status { isNoContent() } }
+        mockMvc.delete("/api/v1/auth/biometric") { bearer(session["accessToken"].asString()) }.andExpect { status { isNoContent() } }
         loginWithBiometric(biometricKey, deviceId).andExpect { jsonPath("$.error.code") { value("BIOMETRIC_NOT_ENABLED") } }
     }
 
@@ -234,10 +233,10 @@ class AuthFlowIntegrationTest(
     fun `pin can be changed with the current pin`() {
         val key = TestDeviceKey()
         val session = registerDevice(key)
-        val deviceId = UUID.fromString(session["deviceId"].asText())
+        val deviceId = UUID.fromString(session["deviceId"].asString())
         mockMvc
             .put("/api/v1/auth/pin") {
-                bearer(session["accessToken"].asText())
+                bearer(session["accessToken"].asString())
                 jsonBody(mapOf("currentPin" to pin, "newPin" to "135790"))
             }.andExpect { status { isNoContent() } }
         loginWithPin(key, deviceId, pin).andExpect { jsonPath("$.error.code") { value("PIN_INVALID") } }
@@ -273,13 +272,13 @@ class AuthFlowIntegrationTest(
                 status { isOk() }
                 jsonPath("$.maskedPhone") { value("08X-XXX-4521") }
             }.json()["otpRef"]
-            .asText()
+            .asString()
 
     private fun registrationToken(): String =
         post("/api/v1/auth/otp/verify", mapOf("otpRef" to startRegistration(), "code" to "000000"))
             .andExpect { status { isOk() } }
             .json()["registrationToken"]
-            .asText()
+            .asString()
 
     private fun registerDevice(key: TestDeviceKey): JsonNode =
         post("/api/v1/auth/devices", deviceBody(registrationToken(), key, pin)).andExpect { status { isOk() } }.json()
@@ -306,7 +305,7 @@ class AuthFlowIntegrationTest(
         post(
             "/api/v1/auth/challenge",
             mapOf("deviceId" to deviceId),
-        ).json()["challenge"].asText()
+        ).json()["challenge"].asString()
 
     private fun loginWithPin(
         key: TestDeviceKey,

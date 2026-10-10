@@ -1,6 +1,5 @@
 package com.luxebank.config
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.luxebank.common.error.ErrorCode
 import com.luxebank.common.error.GlobalExceptionHandler
 import jakarta.servlet.http.HttpServletResponse
@@ -13,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
+import tools.jackson.databind.ObjectMapper
 
 /**
  * Deny-by-default (spec 13.1, A01). Public: health, API description and the unauthenticated
@@ -26,14 +26,15 @@ class SecurityConfig(
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         val entryPoint =
             AuthenticationEntryPoint {
-                    _,
-                    response,
-                    _,
+                _,
+                response,
+                _,
                 ->
                 writeError(response, ErrorCode.UNAUTHORIZED, "Authentication required")
             }
         return http
-            .csrf { it.disable() }
+            // Bearer tokens only, no cookies: CSRF cannot apply to /api. Keep it on everywhere else.
+            .csrf { it.ignoringRequestMatchers("/api/**") }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .httpBasic { it.disable() }
             .formLogin { it.disable() }

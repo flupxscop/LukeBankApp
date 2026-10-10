@@ -38,7 +38,11 @@ class JwtConfig(
             val factory = KeyFactory.getInstance("RSA")
             val privateKey = factory.generatePrivate(PKCS8EncodedKeySpec(pem(jwt.privateKey))) as RSAPrivateKey
             val publicKey = factory.generatePublic(X509EncodedKeySpec(pem(jwt.publicKey))) as RSAPublicKey
-            return RSAKey.Builder(publicKey).privateKey(privateKey).keyID("luxebank-access").build()
+            return RSAKey
+                .Builder(publicKey)
+                .privateKey(privateKey)
+                .keyID("luxebank-access")
+                .build()
         }
         check(!environment.acceptsProfiles(Profiles.of("prod"))) { "JWT signing keys must be configured in production" }
         log.warn("No JWT keys configured; generating an ephemeral key pair (tokens reset on restart)")
@@ -61,7 +65,11 @@ class JwtConfig(
 
     private fun pem(value: String): ByteArray =
         Base64.getDecoder().decode(
-            value.lines().filterNot { it.startsWith("-----") }.joinToString("").trim(),
+            value
+                .lines()
+                .filterNot { it.startsWith("-----") }
+                .joinToString("")
+                .trim(),
         )
 
     private companion object {
