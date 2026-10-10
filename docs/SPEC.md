@@ -266,7 +266,7 @@ LuxeBankUITests/
 
 | ส่วน | ที่ตกลง |
 |---|---|
-| Language / Framework | **Kotlin 2.x + Spring Boot 3.x** (JDK 21) |
+| Language / Framework | **Kotlin 2.x + Spring Boot 4.x** (Spring Framework 7, Jackson 3) (JDK 21) |
 | Build | **Gradle (Kotlin DSL)** |
 | Web / Validation | Spring Web MVC + Jakarta Validation |
 | Security | Spring Security + OAuth2 Resource Server (JWT RS256) |
@@ -521,7 +521,7 @@ Loading (skeleton), Content, Empty, Error (มีปุ่มลองใหม�
 
 | # | หัวข้อ | ข้อตกลง (2026-10-10) |
 |---|---|---|
-| D1 | Backend stack | Spring Boot 3 + **Kotlin** + Gradle (Kotlin DSL), PostgreSQL, Redis |
+| D1 | Backend stack | Spring Boot 4 (3.5 OSS support ended; its critical CVEs are fixed only in Framework 7) + **Kotlin** + Gradle (Kotlin DSL), PostgreSQL, Redis |
 | D2 | ระบบเงิน | เป้าหมายคือ **production จริง** แต่ยังไม่มีสัญญาหรือใบอนุญาต จึงพัฒนาด้วย adapter + stub (ดู 7.0) |
 | D3 | Repo | **Monorepo** แยกเป็น `ios/`, `backend/` และ `api/` |
 | D4 | ยืนยันตัวตนครั้งแรก | **เลขบัตรประชาชน + รหัสผ่าน + OTP** แล้วตั้ง PIN 6 หลัก |

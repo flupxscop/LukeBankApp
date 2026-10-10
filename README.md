@@ -15,7 +15,7 @@ Premium iOS banking app (SwiftUI) with a Spring Boot + Kotlin backend.
 
 ```
 ios/            SwiftUI app (XcodeGen project in ios/project.yml)
-backend/        Spring Boot 3 + Kotlin, PostgreSQL, Redis, Flyway
+backend/        Spring Boot 4 + Kotlin, PostgreSQL, Redis, Flyway
 api/            OpenAPI contract shared by iOS and backend
 docs/           Specification and security documents
 docker-compose.yml  Local stack: postgres + redis + backend
