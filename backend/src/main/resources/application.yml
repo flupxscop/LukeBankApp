@@ -50,3 +50,9 @@ springdoc:
 logging:
   pattern:
     level: "%5p [traceId=%X{traceId:-}]"
+
+luxebank:
+  security:
+    pepper: ${LUXEBANK_PEPPER}
+    identity-key: ${LUXEBANK_IDENTITY_KEY}
+    # jwt.private-key / jwt.public-key come from LUXEBANK_SECURITY_JWT_PRIVATE_KEY / _PUBLIC_KEY (KMS) in production.

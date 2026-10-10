@@ -1,0 +1,6 @@
+luxebank:
+  security:
+    pepper: test-pepper
+    identity-key: test-identity-key
+    limits:
+      auth-requests-per-minute: 1000

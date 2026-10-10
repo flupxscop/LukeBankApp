@@ -1,13 +1,31 @@
+# Project tuning on top of detekt defaults. Rules stay on; thresholds fit
+# guard-clause style auth code, JPA entities and constructor injection.
 style:
   MaxLineLength:
     maxLineLength: 140
   MagicNumber:
-    excludes: ["**/test/**", "**/*Test.kt"]
+    # Configuration defaults read as documentation, not magic numbers.
+    excludes: ["**/test/**", "**/*Test.kt", "**/*Properties.kt"]
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
   ForbiddenComment:
     active: false
+  ThrowsCount:
+    max: 5
+  ReturnCount:
+    max: 3
+complexity:
+  LongParameterList:
+    constructorThreshold: 12
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    thresholdInClasses: 20
+    thresholdInFiles: 20
+  ComplexCondition:
+    threshold: 5
 performance:
   SpreadOperator:
-    excludes: ["**/LuxeBankApplication.kt"]
+    excludes: ["**/LuxeBankApplication.kt", "**/config/SecurityConfig.kt"]
 potential-bugs:
   UnsafeCallOnNullableType:
     active: true

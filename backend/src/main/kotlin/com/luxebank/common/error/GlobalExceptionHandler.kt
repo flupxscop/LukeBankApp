@@ -5,19 +5,28 @@ import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @ExceptionHandler(MethodArgumentNotValidException::class, HttpMessageNotReadableException::class)
+    @ExceptionHandler(ApiException::class)
+    fun handleApi(ex: ApiException): ResponseEntity<ApiErrorResponse> = respond(ex.code, ex.message, ex.remainingAttempts)
+
+    @ExceptionHandler(
+        MethodArgumentNotValidException::class,
+        HandlerMethodValidationException::class,
+        HttpMessageNotReadableException::class,
+    )
     fun handleValidation(): ResponseEntity<ApiErrorResponse> = respond(ErrorCode.VALIDATION_FAILED, "Request is invalid")
 
-    @ExceptionHandler(NoResourceFoundException::class)
+    @ExceptionHandler(NoResourceFoundException::class, HttpRequestMethodNotSupportedException::class)
     fun handleNotFound(): ResponseEntity<ApiErrorResponse> = respond(ErrorCode.NOT_FOUND, "Resource not found")
 
     @ExceptionHandler(Exception::class)
@@ -30,11 +39,13 @@ class GlobalExceptionHandler {
         fun body(
             code: ErrorCode,
             message: String,
-        ) = ApiErrorResponse(ApiError(code.name, message, MDC.get(TraceIdFilter.MDC_KEY)))
+            remainingAttempts: Int? = null,
+        ) = ApiErrorResponse(ApiError(code.name, message, MDC.get(TraceIdFilter.MDC_KEY), remainingAttempts))
 
         fun respond(
             code: ErrorCode,
             message: String,
-        ): ResponseEntity<ApiErrorResponse> = ResponseEntity.status(code.status).body(body(code, message))
+            remainingAttempts: Int? = null,
+        ): ResponseEntity<ApiErrorResponse> = ResponseEntity.status(code.status).body(body(code, message, remainingAttempts))
     }
 }
