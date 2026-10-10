@@ -1,0 +1,703 @@
+{
+  "sourceLanguage": "th",
+  "strings": {
+    "action.payBill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pay bills"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จ่ายบิล"
+          }
+        }
+      }
+    },
+    "action.scan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan QR"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สแกน QR"
+          }
+        }
+      }
+    },
+    "action.topUp": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top up"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เติมเงิน"
+          }
+        }
+      }
+    },
+    "action.transfer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โอนเงิน"
+          }
+        }
+      }
+    },
+    "balance.hidden": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balance hidden"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ซ่อนยอดเงินอยู่"
+          }
+        }
+      }
+    },
+    "balance.toggle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show or hide balance"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ซ่อนหรือแสดงยอดเงิน"
+          }
+        }
+      }
+    },
+    "cards.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage, freeze and set limits for your cards here."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จัดการบัตร ระงับบัตร และตั้งวงเงินได้ที่นี่"
+          }
+        }
+      }
+    },
+    "cashback.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cashback"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เงินคืน"
+          }
+        }
+      }
+    },
+    "category.food": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dining"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อาหาร"
+          }
+        }
+      }
+    },
+    "category.housing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rent"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ค่าเช่า"
+          }
+        }
+      }
+    },
+    "category.investment": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fund return"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ผลตอบแทนกองทุน"
+          }
+        }
+      }
+    },
+    "category.transfer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โอนเงิน"
+          }
+        }
+      }
+    },
+    "category.transport": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transport"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เดินทาง"
+          }
+        }
+      }
+    },
+    "chart.balance.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balance history chart"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กราฟยอดเงินย้อนหลัง"
+          }
+        }
+      }
+    },
+    "comingSoon.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming soon"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เร็ว ๆ นี้"
+          }
+        }
+      }
+    },
+    "dashboard.changeRate %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ in 30 days"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ใน 30 วัน"
+          }
+        }
+      }
+    },
+    "dashboard.wealth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total wealth"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ความมั่งคั่งรวม"
+          }
+        }
+      }
+    },
+    "date.todayAt %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันนี้ %@"
+          }
+        }
+      }
+    },
+    "greeting.afternoon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good afternoon"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สวัสดีตอนบ่าย"
+          }
+        }
+      }
+    },
+    "greeting.evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good evening"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สวัสดีตอนเย็น"
+          }
+        }
+      }
+    },
+    "greeting.morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good morning"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สวัสดีตอนเช้า"
+          }
+        }
+      }
+    },
+    "payments.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer money, pay bills and scan QR codes here."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โอนเงิน จ่ายบิล และสแกน QR ได้ที่นี่"
+          }
+        }
+      }
+    },
+    "profile.avatar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My account"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บัญชีของฉัน"
+          }
+        }
+      }
+    },
+    "profile.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account details, security and settings."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ข้อมูลบัญชี ความปลอดภัย และการตั้งค่า"
+          }
+        }
+      }
+    },
+    "range.month": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1M"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1M"
+          }
+        }
+      }
+    },
+    "range.week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1W"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1W"
+          }
+        }
+      }
+    },
+    "range.year": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1Y"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1Y"
+          }
+        }
+      }
+    },
+    "savings.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings goal"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมายออม"
+          }
+        }
+      }
+    },
+    "spending.lifestyle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lifestyle"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไลฟ์สไตล์"
+          }
+        }
+      }
+    },
+    "spending.ofBudget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "of budget"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ของงบ"
+          }
+        }
+      }
+    },
+    "spending.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spent this month"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้จ่ายเดือนนี้"
+          }
+        }
+      }
+    },
+    "spending.travel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travel"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ท่องเที่ยว"
+          }
+        }
+      }
+    },
+    "state.error.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A temporary problem occurred. Your balance is not affected."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ระบบขัดข้องชั่วคราว ยอดเงินของคุณไม่ได้รับผลกระทบ"
+          }
+        }
+      }
+    },
+    "state.error.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load data"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โหลดข้อมูลไม่สำเร็จ"
+          }
+        }
+      }
+    },
+    "state.loading": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำลังโหลด"
+          }
+        }
+      }
+    },
+    "state.retry": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลองใหม่"
+          }
+        }
+      }
+    },
+    "tab.cards": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cards"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บัตร"
+          }
+        }
+      }
+    },
+    "tab.home": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หน้าแรก"
+          }
+        }
+      }
+    },
+    "tab.payments": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pay"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จ่ายเงิน"
+          }
+        }
+      }
+    },
+    "tab.profile": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บัญชี"
+          }
+        }
+      }
+    },
+    "transactions.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ความเคลื่อนไหว"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

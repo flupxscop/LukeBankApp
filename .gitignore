@@ -1,9 +1,28 @@
-# Xcode
+# Xcode (project is generated from ios/project.yml with XcodeGen)
 DerivedData/
 build/
 *.xcworkspace
 xcuserdata/
 *.xcuserstate
+ios/LuxeBank.xcodeproj/
+ios/TestResults.xcresult/
+
+# Gradle / JVM
+.gradle/
+backend/build/
+*.class
+.kotlin/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Secrets
+.env
+*.pem
+*.p12
+*.mobileprovision
 
 # macOS
 .DS_Store

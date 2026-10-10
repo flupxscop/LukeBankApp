@@ -1,0 +1,38 @@
+included:
+  - LuxeBank
+  - LuxeBankTests
+
+disabled_rules:
+  - trailing_comma
+  - todo
+
+opt_in_rules:
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - empty_count
+  - first_where
+  - private_over_fileprivate
+
+force_unwrapping:
+  severity: error
+
+line_length:
+  warning: 160
+  error: 220
+  ignores_comments: true
+
+type_body_length:
+  warning: 400
+
+file_length:
+  warning: 600
+
+identifier_name:
+  excluded: [id, x, y]
+
+custom_rules:
+  no_print:
+    name: "No print"
+    regex: "^\\s*print\\("
+    message: "Use Logger with .private privacy instead of print (spec 13.4.2)"
+    severity: error
