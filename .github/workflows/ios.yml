@@ -24,6 +24,7 @@ jobs:
         run: swiftlint --strict
       - name: Generate project
         run: xcodegen generate
+      # No CODE_SIGNING_ALLOWED=NO: the simulator Keychain needs the ad-hoc "Sign to Run Locally" signature.
       - name: Unit tests
         run: |
           DEVICE=$(xcrun simctl list devices available | grep -m1 -oE "iPhone [^(]+" | sed 's/ *$//')
@@ -31,8 +32,7 @@ jobs:
             -project LuxeBank.xcodeproj \
             -scheme LuxeBank \
             -destination "platform=iOS Simulator,name=$DEVICE" \
-            -resultBundlePath TestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO
+            -resultBundlePath TestResults.xcresult
       - uses: actions/upload-artifact@v4
         if: always()
         with:
