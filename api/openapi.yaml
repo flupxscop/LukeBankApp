@@ -13,6 +13,232 @@ security:
   - bearerAuth: []
 
 paths:
+  /auth/register:
+    post:
+      summary: Verify citizen ID + password and send an OTP (AUTH-01)
+      operationId: startRegistration
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [citizenId, password]
+              properties:
+                citizenId: { type: string, maxLength: 20, examples: ["1-2345-67890-12-1"] }
+                password: { type: string, maxLength: 128 }
+      responses:
+        "200":
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [otpRef, maskedPhone, expiresInSeconds]
+                properties:
+                  otpRef: { type: string, pattern: "^[A-Z0-9]{4}$" }
+                  maskedPhone: { type: string, examples: ["08X-XXX-4521"] }
+                  expiresInSeconds: { type: integer }
+        "401": { $ref: "#/components/responses/Error" }
+        "423": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+
+  /auth/otp/verify:
+    post:
+      summary: Verify the OTP and get a single-use registration token
+      operationId: verifyOtp
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [otpRef, code]
+              properties:
+                otpRef: { type: string, pattern: "^[A-Z0-9]{4}$" }
+                code: { type: string, pattern: "^\\d{6}$" }
+      responses:
+        "200":
+          description: Code accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [registrationToken]
+                properties:
+                  registrationToken: { type: string }
+        "401": { $ref: "#/components/responses/Error" }
+        "410": { $ref: "#/components/responses/Error" }
+        "423": { $ref: "#/components/responses/Error" }
+
+  /auth/devices:
+    post:
+      summary: Set the PIN and bind this device (revokes any previous device, AUTH-09)
+      operationId: registerDevice
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [registrationToken, pin, deviceName, devicePublicKey]
+              properties:
+                registrationToken: { type: string }
+                pin: { type: string, pattern: "^\\d{6}$" }
+                deviceName: { type: string, maxLength: 100 }
+                devicePublicKey:
+                  type: string
+                  description: Base64 X9.63 uncompressed P-256 public key from the Secure Enclave
+      responses:
+        "200": { $ref: "#/components/responses/Session" }
+        "400": { $ref: "#/components/responses/Error" }
+        "410": { $ref: "#/components/responses/Error" }
+
+  /auth/challenge:
+    post:
+      summary: Single-use login challenge for a bound device
+      operationId: createChallenge
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId]
+              properties:
+                deviceId: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Challenge to sign
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [challenge, expiresInSeconds]
+                properties:
+                  challenge: { type: string }
+                  expiresInSeconds: { type: integer }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /auth/login:
+    post:
+      summary: Unlock with PIN or Face ID (AUTH-03, AUTH-04)
+      description: |
+        `signature` is a base64 DER ECDSA-SHA256 signature over the UTF-8 bytes of `challenge`,
+        made with the device key (PIN) or the biometry-gated key (BIOMETRIC).
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId, challenge, signature, method]
+              properties:
+                deviceId: { type: string, format: uuid }
+                challenge: { type: string }
+                signature: { type: string }
+                method: { type: string, enum: [PIN, BIOMETRIC] }
+                pin: { type: string, pattern: "^\\d{6}$" }
+      responses:
+        "200": { $ref: "#/components/responses/Session" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "423": { $ref: "#/components/responses/Error" }
+
+  /auth/refresh:
+    post:
+      summary: Rotate the refresh token; reuse revokes the whole token family
+      operationId: refresh
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        "200": { $ref: "#/components/responses/Session" }
+        "401": { $ref: "#/components/responses/Error" }
+
+  /auth/logout:
+    post:
+      summary: Revoke this device and all of its tokens
+      operationId: logout
+      responses:
+        "204": { description: Signed out }
+        "401": { $ref: "#/components/responses/Error" }
+
+  /auth/biometric:
+    put:
+      summary: Register the Face ID public key
+      operationId: enableBiometric
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [biometricPublicKey]
+              properties:
+                biometricPublicKey: { type: string }
+      responses:
+        "204": { description: Enabled }
+        "400": { $ref: "#/components/responses/Error" }
+    delete:
+      summary: Remove the Face ID key
+      operationId: disableBiometric
+      responses:
+        "204": { description: Disabled }
+
+  /auth/pin:
+    put:
+      summary: Change the PIN
+      operationId: changePin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPin, newPin]
+              properties:
+                currentPin: { type: string, pattern: "^\\d{6}$" }
+                newPin: { type: string, pattern: "^\\d{6}$" }
+      responses:
+        "204": { description: Changed }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+
+  /me:
+    get:
+      summary: Signed-in customer, first name in the requested language
+      operationId: getMe
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+      responses:
+        "200":
+          description: Customer profile
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [firstName, tier, maskedPhone]
+                properties:
+                  firstName: { type: string }
+                  tier: { type: string }
+                  maskedPhone: { type: string }
+        "401": { $ref: "#/components/responses/Error" }
+
   /dashboard:
     get:
       summary: Home screen summary
@@ -63,6 +289,18 @@ components:
         pattern: "^[A-Za-z0-9-]{8,64}$"
 
   responses:
+    Session:
+      description: Session for the bound device
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [deviceId, accessToken, refreshToken, expiresInSeconds]
+            properties:
+              deviceId: { type: string, format: uuid }
+              accessToken: { type: string, description: RS256 JWT, 15 minutes }
+              refreshToken: { type: string }
+              expiresInSeconds: { type: integer }
     Error:
       description: Error in the shared format
       content:
@@ -91,6 +329,8 @@ components:
               type: string
             traceId:
               type: string
+            remainingAttempts:
+              type: integer
 
     Account:
       type: object
