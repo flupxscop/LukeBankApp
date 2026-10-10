@@ -43,12 +43,25 @@ extension View {
 
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(BankFont.body(16, bold: true))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, minHeight: 56)
-            .background(BankTheme.ink, in: RoundedRectangle(cornerRadius: BankTheme.Radius.button, style: .continuous))
-            .opacity(configuration.isPressed ? 0.85 : 1)
+        PrimaryButton(configuration: configuration)
+    }
+
+    /// Disabled state is a solid grey so nothing behind the button shows through.
+    private struct PrimaryButton: View {
+        let configuration: ButtonStyleConfiguration
+        @Environment(\.isEnabled) private var isEnabled
+
+        var body: some View {
+            configuration.label
+                .font(BankFont.body(16, bold: true))
+                .foregroundStyle(isEnabled ? Color.white : BankTheme.secondaryText)
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .background(
+                    isEnabled ? BankTheme.ink : Color(hex: 0xDDE1E8),
+                    in: RoundedRectangle(cornerRadius: BankTheme.Radius.button, style: .continuous)
+                )
+                .opacity(configuration.isPressed ? 0.85 : 1)
+        }
     }
 }
 

@@ -256,6 +256,23 @@
         }
       }
     },
+    "common.back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ย้อนกลับ"
+          }
+        }
+      }
+    },
     "dashboard.changeRate %@": {
       "extractionState": "manual",
       "localizations": {
@@ -303,6 +320,380 @@
           "stringUnit": {
             "state": "translated",
             "value": "วันนี้ %@"
+          }
+        }
+      }
+    },
+    "error.accountLocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many attempts. Try again in 15 minutes."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใส่ผิดหลายครั้ง กรุณาลองใหม่ใน 15 นาที"
+          }
+        }
+      }
+    },
+    "error.biometricCancelled": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID was cancelled. Use your PIN instead."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยกเลิก Face ID แล้ว ใช้ PIN แทนได้"
+          }
+        }
+      }
+    },
+    "error.credentials": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "National ID or password is incorrect"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลขบัตรประชาชนหรือรหัสผ่านไม่ถูกต้อง"
+          }
+        }
+      }
+    },
+    "error.credentials.remaining %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incorrect details · %lld attempts left"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ข้อมูลไม่ถูกต้อง · เหลืออีก %lld ครั้ง"
+          }
+        }
+      }
+    },
+    "error.generic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong. Please try again."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เกิดข้อผิดพลาด กรุณาลองใหม่"
+          }
+        }
+      }
+    },
+    "error.network": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can't connect. Check your internet."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ต"
+          }
+        }
+      }
+    },
+    "error.otpExpired": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code expired. Request a new one."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รหัสหมดอายุ กรุณาขอรหัสใหม่"
+          }
+        }
+      }
+    },
+    "error.otpInvalid %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wrong code · %lld attempts left"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รหัสไม่ถูกต้อง · เหลืออีก %lld ครั้ง"
+          }
+        }
+      }
+    },
+    "error.pinInvalid %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wrong PIN · %lld attempts left"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN ไม่ถูกต้อง · เหลืออีก %lld ครั้ง"
+          }
+        }
+      }
+    },
+    "error.pinLocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN locked. Verify your identity again."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN ถูกล็อก กรุณายืนยันตัวตนใหม่"
+          }
+        }
+      }
+    },
+    "error.pinMismatch": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PINs didn't match. Try again."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN ไม่ตรงกัน ตั้งใหม่อีกครั้ง"
+          }
+        }
+      }
+    },
+    "error.pinWeak": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avoid sequences and repeated digits"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN ต้องไม่เรียงกันและไม่ซ้ำทั้งหมด"
+          }
+        }
+      }
+    },
+    "error.rateLimited": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many tries. Please wait a moment."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลองบ่อยเกินไป กรุณารอสักครู่"
+          }
+        }
+      }
+    },
+    "faceid.benefit.local": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your face data stays on this iPhone"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ข้อมูลใบหน้าอยู่ในเครื่องเท่านั้น"
+          }
+        }
+      }
+    },
+    "faceid.benefit.local.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The bank never receives or stores it"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ธนาคารไม่ได้รับหรือเก็บข้อมูลนี้"
+          }
+        }
+      }
+    },
+    "faceid.benefit.stepUp": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID for transfers from ฿50,000"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โอนตั้งแต่ ฿50,000 ใช้ Face ID"
+          }
+        }
+      }
+    },
+    "faceid.benefit.stepUp.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extra check required by the Bank of Thailand"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยันเพิ่มตามแนวทางของ ธปท."
+          }
+        }
+      }
+    },
+    "faceid.enable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on Face ID"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดใช้ Face ID"
+          }
+        }
+      }
+    },
+    "faceid.later": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไว้ทีหลัง"
+          }
+        }
+      }
+    },
+    "faceid.reason": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verify it's you to open LuxeBank"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยันตัวตนเพื่อเข้าใช้ LuxeBank"
+          }
+        }
+      }
+    },
+    "faceid.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock and confirm transfers in a glance, without typing your PIN."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปลดล็อกและยืนยันการโอนได้ในพริบตา โดยไม่ต้องกรอก PIN ทุกครั้ง"
+          }
+        }
+      }
+    },
+    "faceid.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Face ID"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เข้าใช้ด้วย Face ID"
           }
         }
       }
@@ -358,6 +749,159 @@
         }
       }
     },
+    "lock.autoLock": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locks automatically after 5 minutes"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล็อกอัตโนมัติเมื่อไม่ใช้งาน 5 นาที"
+          }
+        }
+      }
+    },
+    "lock.faceid": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock with Face ID"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปลดล็อกด้วย Face ID"
+          }
+        }
+      }
+    },
+    "lock.greeting %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome back, %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สวัสดี คุณ%@"
+          }
+        }
+      }
+    },
+    "lock.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter your PIN"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กรอก PIN เพื่อเข้าสู่ระบบ"
+          }
+        }
+      }
+    },
+    "onboarding.step %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %lld of 3"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ขั้นตอน %lld จาก 3"
+          }
+        }
+      }
+    },
+    "otp.progress %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of 6 digits entered"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กรอกแล้ว %lld จาก 6 หลัก"
+          }
+        }
+      }
+    },
+    "otp.reference %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reference %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อ้างอิง %@"
+          }
+        }
+      }
+    },
+    "otp.subtitle %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We sent a 6-digit code to %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่งรหัส 6 หลักไปที่ %@"
+          }
+        }
+      }
+    },
+    "otp.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verification code"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รหัสยืนยัน"
+          }
+        }
+      }
+    },
     "payments.placeholder": {
       "extractionState": "manual",
       "localizations": {
@@ -371,6 +915,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "โอนเงิน จ่ายบิล และสแกน QR ได้ที่นี่"
+          }
+        }
+      }
+    },
+    "pin.confirm.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm your PIN"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยันรหัส PIN"
+          }
+        }
+      }
+    },
+    "pin.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลบ"
+          }
+        }
+      }
+    },
+    "pin.progress %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of 6 digits entered"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กรอกแล้ว %lld จาก 6 หลัก"
+          }
+        }
+      }
+    },
+    "pin.rule.repeat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not all the same"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่ซ้ำทั้งหมด"
+          }
+        }
+      }
+    },
+    "pin.rule.sequence": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sequences"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่เรียงกัน"
+          }
+        }
+      }
+    },
+    "pin.setup.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 digits to unlock the app and confirm transactions"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 หลัก ใช้ปลดล็อกแอปและยืนยันธุรกรรม"
+          }
+        }
+      }
+    },
+    "pin.setup.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a PIN"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งรหัส PIN"
           }
         }
       }
@@ -456,6 +1119,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "1Y"
+          }
+        }
+      }
+    },
+    "register.binding": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account works on one iPhone at a time. The previous device is unlinked and notified."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บัญชีผูกได้ครั้งละ 1 เครื่อง เครื่องเดิมจะถูกยกเลิกและได้รับแจ้งเตือน"
+          }
+        }
+      }
+    },
+    "register.citizenID": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "National ID"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลขบัตรประชาชน"
+          }
+        }
+      }
+    },
+    "register.citizenID.valid": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valid format"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รูปแบบถูกต้อง"
+          }
+        }
+      }
+    },
+    "register.password": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รหัสผ่าน"
+          }
+        }
+      }
+    },
+    "register.requestOTP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send OTP"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ขอรหัส OTP"
+          }
+        }
+      }
+    },
+    "register.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use your national ID and registered password to link this iPhone to your account."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้เลขบัตรประชาชนและรหัสผ่านที่ลงทะเบียนไว้ เพื่อผูกเครื่องนี้กับบัญชีของคุณ"
+          }
+        }
+      }
+    },
+    "register.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verify your identity"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยันตัวตน"
           }
         }
       }
@@ -694,6 +1476,142 @@
           "stringUnit": {
             "state": "translated",
             "value": "ความเคลื่อนไหว"
+          }
+        }
+      }
+    },
+    "welcome.language": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ภาษา"
+          }
+        }
+      }
+    },
+    "welcome.reset.pinLocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your PIN was locked after too many attempts. Please verify your identity again."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN ถูกล็อกเพราะใส่ผิดหลายครั้ง กรุณายืนยันตัวตนอีกครั้ง"
+          }
+        }
+      }
+    },
+    "welcome.reset.revoked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This iPhone was unlinked because another device was registered."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เครื่องนี้ถูกยกเลิกการผูกบัญชี เพราะมีการลงทะเบียนเครื่องอื่น"
+          }
+        }
+      }
+    },
+    "welcome.start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get started"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เริ่มต้นใช้งาน"
+          }
+        }
+      }
+    },
+    "welcome.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accounts, cards and transfers in one app, protected by Face ID and a 6-digit PIN."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ดูแลบัญชี บัตร และการโอนเงินในแอปเดียว ปลอดภัยด้วย Face ID และ PIN 6 หลัก"
+          }
+        }
+      }
+    },
+    "welcome.terms": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By continuing you accept the terms and privacy policy."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เมื่อดำเนินการต่อ ถือว่ายอมรับข้อกำหนดและนโยบายความเป็นส่วนตัว"
+          }
+        }
+      }
+    },
+    "welcome.title.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private banking"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ธนาคารส่วนตัว"
+          }
+        }
+      }
+    },
+    "welcome.title.2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in your hand"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ในมือคุณ"
           }
         }
       }

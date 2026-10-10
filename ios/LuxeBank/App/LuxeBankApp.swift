@@ -6,7 +6,7 @@ struct LuxeBankApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(environment: environment)
+            RootView(environment: environment)
                 .preferredColorScheme(.light)
         }
     }
