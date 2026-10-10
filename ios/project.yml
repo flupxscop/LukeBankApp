@@ -23,7 +23,12 @@ targets:
     platform: iOS
     sources:
       - path: LuxeBank
+        excludes:
+          - "Resources/Debug/**"
     settings:
+      configs:
+        Debug:
+          INFOPLIST_FILE: LuxeBank/Resources/Debug/Info-Debug.plist
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.luxebank.app
         TARGETED_DEVICE_FAMILY: "1"
@@ -49,6 +54,19 @@ targets:
             echo "warning: SwiftLint not installed"
           fi
 
+  LuxeBankUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: LuxeBankUITests
+    dependencies:
+      - target: LuxeBank
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.luxebank.app.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: LuxeBank
+
   LuxeBankTests:
     type: bundle.unit-test
     platform: iOS
@@ -69,9 +87,11 @@ schemes:
       targets:
         LuxeBank: all
         LuxeBankTests: [test]
+        LuxeBankUITests: [test]
     test:
       targets:
         - LuxeBankTests
+        - LuxeBankUITests
       gatherCoverageData: true
       coverageTargets:
         - LuxeBank

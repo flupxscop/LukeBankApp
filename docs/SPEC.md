@@ -379,18 +379,20 @@ Base URL `/api/v1` · JSON · Header ที่ต้องส่ง: `Authorizat
 ### Auth
 | Method | Path | คำอธิบาย |
 |---|---|---|
-| POST | `/auth/register` | ส่งข้อมูลยืนยันตัวตน แล้วรับ `otp_ref` |
-| POST | `/auth/otp/verify` | ยืนยัน OTP แล้วรับ `registration_token` |
-| POST | `/auth/pin` | ตั้ง PIN และผูกอุปกรณ์ (ส่ง device public key) แล้วรับ tokens |
-| POST | `/auth/login` | ปลดล็อกด้วย PIN หรือ biometric signature แล้วรับ tokens |
-| POST | `/auth/refresh` | หมุนเวียน refresh token |
-| POST | `/auth/logout` | ยกเลิก token และอุปกรณ์ |
-| PUT | `/auth/pin` | เปลี่ยน PIN |
+| POST | `/auth/register` | ตรวจเลขบัตรประชาชน + รหัสผ่าน แล้วส่ง OTP ได้ `otpRef`, `maskedPhone` |
+| POST | `/auth/otp/verify` | ยืนยัน OTP ได้ `registrationToken` (ใช้ได้ครั้งเดียว อายุ 10 นาที) |
+| POST | `/auth/devices` | ตั้ง PIN + ผูกเครื่องด้วย public key ของ Secure Enclave (เครื่องเดิมถูกยกเลิก) ได้ session |
+| POST | `/auth/challenge` | ขอ challenge ใช้ครั้งเดียว อายุ 2 นาที |
+| POST | `/auth/login` | ส่งลายเซ็น challenge + PIN (`method: PIN`) หรือลายเซ็นจาก key ที่ล็อกด้วย Face ID (`method: BIOMETRIC`) ได้ session |
+| POST | `/auth/refresh` | หมุน refresh token; ถ้าใช้ซ้ำจะยกเลิกทั้ง family |
+| POST | `/auth/logout` | ยกเลิกเครื่องและ token ทั้งหมด |
+| PUT / DELETE | `/auth/biometric` | ลงทะเบียน / ลบ public key สำหรับ Face ID |
+| PUT | `/auth/pin` | เปลี่ยน PIN (ต้องใส่ PIN เดิม) |
 
 ### Accounts & Transactions
 | Method | Path | คำอธิบาย |
 |---|---|---|
-| GET | `/me` | โปรไฟล์ ระดับลูกค้า และ RM |
+| GET | `/me` | ชื่อตามภาษา (`Accept-Language`), ระดับลูกค้า, เบอร์แบบ mask |
 | GET | `/accounts` | รายการบัญชีพร้อมยอดคงเหลือ |
 | GET | `/accounts/{id}/transactions?cursor&limit&from&to&category&direction&q` | ประวัติรายการ |
 | GET | `/transactions/{id}` | รายละเอียดรายการ |
@@ -439,7 +441,7 @@ Base URL `/api/v1` · JSON · Header ที่ต้องส่ง: `Authorizat
   }
 }
 ```
-Error code หลัก: `INVALID_PIN`, `PIN_LOCKED`, `TOKEN_EXPIRED`, `STEP_UP_REQUIRED`, `INSUFFICIENT_FUNDS`, `DAILY_LIMIT_EXCEEDED`, `RECIPIENT_NOT_FOUND`, `INQUIRY_EXPIRED`, `DUPLICATE_REQUEST`, `CARD_FROZEN`, `SERVICE_UNAVAILABLE`
+Error code หลัก: `INVALID_CREDENTIALS`, `ACCOUNT_LOCKED`, `OTP_INVALID`, `OTP_EXPIRED`, `OTP_LOCKED`, `PIN_INVALID` (มี `remainingAttempts`), `PIN_LOCKED`, `PIN_POLICY_VIOLATION`, `CHALLENGE_INVALID`, `SIGNATURE_INVALID`, `TOKEN_INVALID`, `RATE_LIMITED`, `STEP_UP_REQUIRED`, `INSUFFICIENT_FUNDS`, `DAILY_LIMIT_EXCEEDED`, `RECIPIENT_NOT_FOUND`, `INQUIRY_EXPIRED`, `DUPLICATE_REQUEST`, `CARD_FROZEN`, `SERVICE_UNAVAILABLE`
 
 ---
 

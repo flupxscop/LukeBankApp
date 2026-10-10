@@ -34,12 +34,20 @@ xcodegen generate
 open LuxeBank.xcodeproj
 ```
 
-Run the `LuxeBank` scheme on an iPhone simulator. The app uses mock repositories until the backend endpoints land (M2).
+Run the `LuxeBank` scheme on an iPhone simulator. By default the app uses mock repositories. To use the local backend, add the launch argument `-LuxeBankAPI http://127.0.0.1:8080` (Debug builds allow `localhost` only).
 
-Tests:
+Demo customer (synthetic, local profile only): national ID `1-2345-67890-12-1`, password `LuxeDemo#2026`, OTP `000000`.
+
+Tests (unit + UI onboarding flow):
 
 ```bash
 xcodebuild test -project ios/LuxeBank.xcodeproj -scheme LuxeBank -destination 'platform=iOS Simulator,name=iPhone 18 Pro'
+```
+
+Run the UI flow against the real backend:
+
+```bash
+TEST_RUNNER_LUXEBANK_API=http://127.0.0.1:8080 xcodebuild test -project ios/LuxeBank.xcodeproj -scheme LuxeBank -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -only-testing:LuxeBankUITests
 ```
 
 ## Backend

@@ -17,6 +17,7 @@ struct DashboardView: View {
         }
         .scrollIndicators(.hidden)
         .background(BankBackground())
+        .accessibilityIdentifier("dashboard")
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
     }
