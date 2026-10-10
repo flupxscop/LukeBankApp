@@ -1,0 +1,159 @@
+openapi: 3.1.0
+info:
+  title: LuxeBank API
+  version: 1.0.0-draft
+  description: |
+    Contract between the iOS app and the backend (spec section 9, API9).
+    Money amounts are decimal strings with two fraction digits, e.g. "4825450.75".
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local (docker-compose)
+
+security:
+  - bearerAuth: []
+
+paths:
+  /dashboard:
+    get:
+      summary: Home screen summary
+      operationId: getDashboard
+      x-milestone: M2
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/TraceId"
+      responses:
+        "200":
+          description: Dashboard data for the signed-in customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "401":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      schema:
+        type: string
+        enum: [th, en]
+    DeviceId:
+      name: X-Device-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TraceId:
+      name: X-Trace-Id
+      in: header
+      schema:
+        type: string
+        pattern: "^[A-Za-z0-9-]{8,64}$"
+
+  responses:
+    Error:
+      description: Error in the shared format
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    Money:
+      type: string
+      pattern: "^-?\\d+\\.\\d{2}$"
+      examples: ["4825450.75"]
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              examples: [INSUFFICIENT_FUNDS]
+            message:
+              type: string
+            traceId:
+              type: string
+
+    Account:
+      type: object
+      required: [id, name, maskedNumber, balance]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        maskedNumber: { type: string, examples: ["•••• 4289"] }
+        balance: { $ref: "#/components/schemas/Money" }
+
+    Transaction:
+      type: object
+      required: [id, merchant, category, occurredAt, amount]
+      properties:
+        id: { type: string, format: uuid }
+        merchant: { type: string }
+        monogram: { type: [string, "null"] }
+        category:
+          type: string
+          enum: [food, housing, investment, transport, transfer]
+        occurredAt: { type: string, format: date-time }
+        amount: { $ref: "#/components/schemas/Money" }
+
+    Dashboard:
+      type: object
+      required: [customerFirstName, primaryAccount, monthChange, monthChangeRate, balanceHistory, cashbackThisMonth, spending, savingsGoal, recentTransactions]
+      properties:
+        customerFirstName: { type: string }
+        primaryAccount: { $ref: "#/components/schemas/Account" }
+        monthChange: { $ref: "#/components/schemas/Money" }
+        monthChangeRate: { type: string, examples: ["6.8"] }
+        balanceHistory:
+          type: array
+          items:
+            type: object
+            required: [date, balance]
+            properties:
+              date: { type: string, format: date }
+              balance: { $ref: "#/components/schemas/Money" }
+        cashbackThisMonth: { $ref: "#/components/schemas/Money" }
+        cashbackTrend:
+          type: array
+          items: { $ref: "#/components/schemas/Money" }
+        spending:
+          type: object
+          required: [categories]
+          properties:
+            categories:
+              type: array
+              items:
+                type: object
+                required: [kind, spent, budget]
+                properties:
+                  kind: { type: string, enum: [lifestyle, travel] }
+                  spent: { $ref: "#/components/schemas/Money" }
+                  budget: { $ref: "#/components/schemas/Money" }
+        savingsGoal:
+          type: object
+          required: [saved, target]
+          properties:
+            saved: { $ref: "#/components/schemas/Money" }
+            target: { $ref: "#/components/schemas/Money" }
+        recentTransactions:
+          type: array
+          maxItems: 5
+          items: { $ref: "#/components/schemas/Transaction" }

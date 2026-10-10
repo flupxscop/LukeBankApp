@@ -1,0 +1,13 @@
+style:
+  MaxLineLength:
+    maxLineLength: 140
+  MagicNumber:
+    excludes: ["**/test/**", "**/*Test.kt"]
+  ForbiddenComment:
+    active: false
+performance:
+  SpreadOperator:
+    excludes: ["**/LuxeBankApplication.kt"]
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true
