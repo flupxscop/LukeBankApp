@@ -1,0 +1,4 @@
+# Local development against docker-compose. Never use these values outside a laptop.
+spring:
+  datasource:
+    password: ${DB_PASSWORD:luxebank-local}
