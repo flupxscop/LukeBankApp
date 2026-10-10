@@ -1,0 +1,40 @@
+name: iOS
+
+on:
+  pull_request:
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+  push:
+    branches: [main]
+    paths: ["ios/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: brew install xcodegen swiftlint
+      - name: SwiftLint
+        run: swiftlint --strict
+      - name: Generate project
+        run: xcodegen generate
+      - name: Unit tests
+        run: |
+          DEVICE=$(xcrun simctl list devices available | grep -m1 -oE "iPhone [^(]+" | sed 's/ *$//')
+          xcodebuild test \
+            -project LuxeBank.xcodeproj \
+            -scheme LuxeBank \
+            -destination "platform=iOS Simulator,name=$DEVICE" \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-test-results
+          path: ios/TestResults.xcresult

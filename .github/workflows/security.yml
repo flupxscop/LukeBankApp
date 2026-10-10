@@ -1,0 +1,60 @@
+name: Security gates
+
+# Spec 13.4.3 — SAST, SCA, secret scanning and container scanning on every PR.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep scan --config p/kotlin --config p/swift --config p/secrets --config p/owasp-top-ten --severity ERROR --error
+
+  sca:
+    name: Dependency & filesystem scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+  container:
+    name: Container image scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t luxebank-backend:ci backend
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: luxebank-backend:ci
+          severity: CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true

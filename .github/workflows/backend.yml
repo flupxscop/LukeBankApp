@@ -1,0 +1,36 @@
+name: Backend
+
+on:
+  pull_request:
+    paths: ["backend/**", "api/**", ".github/workflows/backend.yml"]
+  push:
+    branches: [main]
+    paths: ["backend/**", "api/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Lint, detekt, tests (Testcontainers) and SBOM
+        run: ./gradlew build cyclonedxBom
+      - name: Coverage gate (70%)
+        run: ./gradlew jacocoTestCoverageVerification
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-reports
+          path: |
+            backend/build/reports
+            backend/build/reports/sbom.json
