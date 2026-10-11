@@ -118,6 +118,7 @@ private struct TransactionDetailDTO: Decodable {
     let referenceNo: String
     let status: String
     let account: AccountRef
+    let hasSlip: Bool?
 
     func domain() throws -> TransactionDetail {
         TransactionDetail(
@@ -125,7 +126,8 @@ private struct TransactionDetailDTO: Decodable {
             referenceNo: referenceNo,
             isPosted: status == "posted",
             accountName: account.name,
-            accountMaskedNumber: account.maskedNumber
+            accountMaskedNumber: account.maskedNumber,
+            hasSlip: hasSlip ?? false
         )
     }
 }

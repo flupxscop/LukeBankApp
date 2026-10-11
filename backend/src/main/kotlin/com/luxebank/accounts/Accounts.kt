@@ -20,6 +20,8 @@ data class AccountRow(
     val accountNumber: String,
     val primary: Boolean,
     val balanceSatang: Long,
+    val dailyTransferLimitSatang: Long = 0,
+    val status: String = "active",
 ) {
     /** "•••• 4289" — the full account number never leaves the server on list screens. */
     val maskedNumber: String get() = "•••• " + accountNumber.takeLast(MASK_VISIBLE)
@@ -58,6 +60,8 @@ class AccountQueries(
                 accountNumber = rs.getString("account_number"),
                 primary = rs.getBoolean("is_primary"),
                 balanceSatang = rs.getLong("balance_satang"),
+                dailyTransferLimitSatang = rs.getLong("daily_transfer_limit_satang"),
+                status = rs.getString("status"),
             )
         }
 
@@ -83,6 +87,36 @@ class AccountQueries(
         userId: UUID,
         accountId: UUID,
     ): AccountRow = findOwned(userId, accountId) ?: throw ApiException(ErrorCode.NOT_FOUND, "Resource not found")
+
+    /** Another customer's active account by number, for LuxeBank-to-LuxeBank transfers (TRF-02). */
+    fun findActiveByNumber(accountNumber: String): AccountRow? =
+        jdbc
+            .query(
+                "SELECT * FROM accounts WHERE account_number = :number AND user_id IS NOT NULL AND status = 'active'",
+                mapOf("number" to accountNumber),
+                mapper,
+            ).firstOrNull()
+
+    /** "นกน้อย ใจงาม" in the requested language; unmasked, so callers mask before it leaves the server. */
+    fun ownerName(
+        userId: UUID,
+        english: Boolean,
+    ): String =
+        jdbc
+            .query(
+                "SELECT first_name_th, last_name_th, first_name_en, last_name_en FROM users WHERE id = :id",
+                mapOf("id" to userId),
+            ) { rs, _ ->
+                if (english) {
+                    "${rs.getString(
+                        "first_name_en",
+                    )} ${rs.getString("last_name_en")}"
+                } else {
+                    "${rs.getString("first_name_th")} ${rs.getString("last_name_th")}"
+                }
+            }.firstOrNull()
+            ?.trim()
+            .orEmpty()
 
     fun requirePrimary(userId: UUID): AccountRow =
         listForUser(userId).firstOrNull() ?: throw ApiException(ErrorCode.NOT_FOUND, "Resource not found")

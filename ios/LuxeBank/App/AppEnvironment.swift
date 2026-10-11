@@ -13,6 +13,7 @@ struct AppEnvironment {
     /// Set when running against a backend; otherwise `mockBank` serves data.
     let apiClient: APIClient?
     let mockBank: MockBankRepository?
+    let mockPayments: MockPaymentRepository?
 
     static func makeDefault(arguments: [String] = ProcessInfo.processInfo.arguments) -> AppEnvironment {
         let storage = KeychainStore()
@@ -36,25 +37,29 @@ struct AppEnvironment {
         } else {
             auth = MockAuthRepository()
         }
+        let mockBank = apiClient == nil ? MockBankRepository() : nil
         return AppEnvironment(
             authRepository: auth,
             secureStorage: storage,
             keyManager: SecureEnclaveKeyManager(storage: storage),
             biometrics: SystemBiometrics(),
             apiClient: apiClient,
-            mockBank: apiClient == nil ? MockBankRepository() : nil
+            mockBank: mockBank,
+            mockPayments: apiClient == nil ? MockPaymentRepository(bank: mockBank) : nil
         )
     }
 
     static var mock: AppEnvironment {
         let storage = InMemorySecureStorage()
+        let bank = MockBankRepository()
         return AppEnvironment(
             authRepository: MockAuthRepository(),
             secureStorage: storage,
             keyManager: SecureEnclaveKeyManager(storage: storage),
             biometrics: SystemBiometrics(),
             apiClient: nil,
-            mockBank: MockBankRepository()
+            mockBank: bank,
+            mockPayments: MockPaymentRepository(bank: bank)
         )
     }
 
@@ -68,6 +73,14 @@ struct AppEnvironment {
             return RemoteBankRepository(api: AuthorizedAPI(client: apiClient, tokens: session))
         }
         return mockBank ?? MockBankRepository()
+    }
+
+    /// Transfers, bills and QR for the signed-in customer (M3).
+    func makePaymentRepository(session: SessionManager) -> PaymentRepository {
+        if let apiClient {
+            return RemotePaymentRepository(api: AuthorizedAPI(client: apiClient, tokens: session))
+        }
+        return mockPayments ?? MockPaymentRepository(bank: mockBank)
     }
 
     func makeRegistrationViewModel(session: SessionManager) -> RegistrationViewModel {

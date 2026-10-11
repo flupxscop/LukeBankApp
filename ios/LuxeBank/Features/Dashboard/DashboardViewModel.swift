@@ -37,7 +37,7 @@ final class DashboardViewModel {
     private(set) var state: State = .loading
     var selectedRange: HistoryRange = .month
     private(set) var isBalanceHidden = false
-    /// Recorded for routing; the destinations arrive in M3.
+    /// The last shortcut tapped; ContentView opens the matching payment flow.
     private(set) var lastSelectedAction: QuickAction?
 
     private let repository: DashboardRepository

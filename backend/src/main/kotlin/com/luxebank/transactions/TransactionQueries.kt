@@ -33,6 +33,7 @@ data class TransactionDetailRow(
     val status: String,
     val accountName: String,
     val accountNumber: String,
+    val hasSlip: Boolean,
 )
 
 data class TransactionFilter(
@@ -143,7 +144,8 @@ class TransactionQueries(
         jdbc
             .query(
                 """
-                SELECT t.*, j.reference_no, j.status, a.name AS account_name, a.account_number
+                SELECT t.*, j.reference_no, j.status, a.name AS account_name, a.account_number,
+                       EXISTS (SELECT 1 FROM payments p WHERE p.transaction_id = t.id) AS has_slip
                 FROM transactions t
                 JOIN accounts a ON a.id = t.account_id
                 JOIN journal_entries j ON j.id = t.journal_entry_id
@@ -157,6 +159,7 @@ class TransactionQueries(
                     status = rs.getString("status"),
                     accountName = rs.getString("account_name"),
                     accountNumber = rs.getString("account_number"),
+                    hasSlip = rs.getBoolean("has_slip"),
                 )
             }.firstOrNull()
 

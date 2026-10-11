@@ -21,6 +21,16 @@ object Money {
         val fraction = (abs % SATANG_PER_BAHT).toString().padStart(FRACTION_DIGITS, '0')
         return "$sign${abs / SATANG_PER_BAHT}.$fraction"
     }
+
+    private val AMOUNT = Regex("^\\d{1,10}(\\.\\d{1,2})?$")
+
+    /** "75000" or "75000.5" → satang. Null for negative, zero, malformed or more than two decimals (13.4.4). */
+    fun parsePositive(value: String): Long? {
+        if (!AMOUNT.matches(value)) return null
+        val (whole, fraction) = value.split('.').let { it[0] to it.getOrElse(1) { "" } }
+        val satang = whole.toLong() * SATANG_PER_BAHT + fraction.padEnd(FRACTION_DIGITS, '0').toLong()
+        return satang.takeIf { it > 0 }
+    }
 }
 
 enum class SpendingKind {

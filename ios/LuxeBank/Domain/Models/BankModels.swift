@@ -107,6 +107,7 @@ struct TransactionDetail: Equatable {
     let isPosted: Bool
     let accountName: String
     let accountMaskedNumber: String
+    var hasSlip = false
 }
 
 struct MoneyTotals: Equatable {

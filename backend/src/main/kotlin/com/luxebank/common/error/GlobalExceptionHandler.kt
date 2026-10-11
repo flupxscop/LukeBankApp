@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
+import org.springframework.web.bind.ServletRequestBindingException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
@@ -27,6 +28,7 @@ class GlobalExceptionHandler {
         HttpMessageNotReadableException::class,
         MethodArgumentTypeMismatchException::class,
         MissingServletRequestParameterException::class,
+        ServletRequestBindingException::class,
     )
     fun handleValidation(): ResponseEntity<ApiErrorResponse> = respond(ErrorCode.VALIDATION_FAILED, "Request is invalid")
 

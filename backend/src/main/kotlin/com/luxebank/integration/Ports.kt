@@ -16,3 +16,57 @@ interface OtpSender {
 fun interface OtpCodeGenerator {
     fun generate(): String
 }
+
+/** A person or company at another bank, as the bank's directory reports them. */
+data class ExternalAccount(
+    val bankCode: String,
+    val accountNumber: String,
+    val fullName: String,
+)
+
+/** ITMX / partner bank: name inquiry and credit transfer to other banks (TRF-03). */
+interface InterbankTransferGateway {
+    /** Null when the account does not exist. */
+    fun lookup(
+        bankCode: String,
+        accountNumber: String,
+    ): ExternalAccount?
+
+    /** Throws [com.luxebank.common.error.ApiException] with SERVICE_UNAVAILABLE when the other bank rejects or times out. */
+    fun transfer(
+        to: ExternalAccount,
+        amountSatang: Long,
+        reference: String,
+    )
+}
+
+/** PromptPay proxy lookup by mobile number or national ID (TRF-04). */
+fun interface PromptPayDirectory {
+    /** Null when nobody registered the proxy. */
+    fun resolve(proxy: String): ExternalAccount?
+}
+
+data class BillDetails(
+    val customerName: String,
+    /** Null for top-ups, where the customer picks the amount. */
+    val amountDueSatang: Long?,
+    val dueDate: java.time.LocalDate?,
+)
+
+/** Bill payment aggregator (BILL-01…05). */
+interface BillPaymentGateway {
+    /** Null when the reference is unknown to the biller. */
+    fun inquire(
+        billerCode: String,
+        ref1: String,
+        ref2: String?,
+    ): BillDetails?
+
+    fun pay(
+        billerCode: String,
+        ref1: String,
+        ref2: String?,
+        amountSatang: Long,
+        reference: String,
+    )
+}

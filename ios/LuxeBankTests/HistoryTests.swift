@@ -21,7 +21,7 @@ struct HistoryViewModelTests {
         #expect(viewModel.items == viewModel.items.sorted { $0.date > $1.date })
         #expect(viewModel.sections.flatMap(\.items) == viewModel.items)
         #expect(Set(viewModel.sections.map(\.day)).count == viewModel.sections.count)
-        let totals = try? #require(viewModel.totals)
+        let totals = viewModel.totals
         #expect((totals?.moneyIn ?? 0) > 0)
         #expect((totals?.moneyOut ?? 0) > 0)
     }

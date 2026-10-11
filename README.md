@@ -38,6 +38,13 @@ Run the `LuxeBank` scheme on an iPhone simulator. By default the app uses mock r
 
 Demo customer (synthetic, local profile only): national ID `1-2345-67890-12-1`, password `LuxeDemo#2026`, OTP `000000`. On first start the `local` profile also seeds two accounts, budgets, a savings goal and a year of deterministic ledger history for the home and history screens.
 
+Payments (M3) run against stub gateways in every profile except `prod` (which refuses to start with stubs):
+
+- Other-bank and PromptPay numbers ending in `0000` do not exist; numbers ending in `9999` are rejected by the receiving bank (nothing is deducted).
+- A second LuxeBank customer, account `222-3-33444-5`, receives internal transfers; the demo customer also has three favourite payees and saved bills (MEA `0123456789`, LuxeBank card).
+- Bill references of all zeros are unknown; top-ups (AIS, TrueMove H, TrueMoney) take any amount.
+- Amounts from ฿50,000 need Face ID, so test those on a device or a simulator with enrolled Face ID.
+
 Tests (unit + UI onboarding flow):
 
 ```bash

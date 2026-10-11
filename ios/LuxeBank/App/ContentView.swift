@@ -11,12 +11,20 @@ struct ContentView: View {
     @State private var homePath: [HomeRoute] = []
     @State private var dashboardViewModel: DashboardViewModel
     @State private var historyViewModel: HistoryViewModel?
+    @State private var paymentsViewModel: PaymentsViewModel
+    @State private var flow: PaymentFlow?
     private let repository: BankRepository
+    private let payments: PaymentRepository
+    private let authorizer: PaymentAuthorizing
 
     init(environment: AppEnvironment, session: SessionManager) {
         let repository = environment.makeBankRepository(session: session)
+        let payments = environment.makePaymentRepository(session: session)
         self.repository = repository
+        self.payments = payments
+        authorizer = DevicePaymentAuthorizer(keys: environment.keyManager, session: session)
         _dashboardViewModel = State(initialValue: DashboardViewModel(repository: repository))
+        _paymentsViewModel = State(initialValue: PaymentsViewModel(repository: payments))
     }
 
     var body: some View {
@@ -27,7 +35,7 @@ struct ContentView: View {
                 switch selectedTab {
                 case .home: home
                 case .cards: CardsView()
-                case .payments: PaymentsView()
+                case .payments: PaymentsView(viewModel: paymentsViewModel) { flow = $0 }
                 case .profile: ProfileView()
                 }
             }
@@ -41,6 +49,9 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: homePath.isEmpty)
+        .fullScreenCover(item: $flow) { flow in
+            paymentFlow(flow)
+        }
     }
 
     private var home: some View {
@@ -51,7 +62,8 @@ struct ContentView: View {
                     historyViewModel = HistoryViewModel(account: account, repository: repository)
                     homePath.append(.history)
                 },
-                onSelectTransaction: { homePath.append(.transaction($0.id)) }
+                onSelectTransaction: { homePath.append(.transaction($0.id)) },
+                onQuickAction: start
             )
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: HomeRoute.self) { route in
@@ -65,12 +77,63 @@ struct ContentView: View {
                         viewModel: TransactionDetailViewModel(transactionID: id, repository: repository) { updated in
                             historyViewModel?.replace(updated)
                             dashboardViewModel.replace(updated)
-                        }
+                        },
+                        loadSlip: { try await payments.slip(transactionID: $0) }
                     )
                 }
             }
         }
         .tint(BankTheme.ink)
+    }
+
+    @ViewBuilder
+    private func paymentFlow(_ flow: PaymentFlow) -> some View {
+        switch flow {
+        case .transfer(let prefill):
+            TransferFlowView(
+                viewModel: TransferViewModel(repository: payments, prefill: prefill),
+                authorizer: authorizer,
+                onClose: finish,
+                onScan: { self.flow = .scan }
+            )
+        case .bills(let category, let target):
+            BillFlowView(
+                viewModel: BillsViewModel(repository: payments, category: category, target: target),
+                authorizer: authorizer,
+                onClose: finish,
+                onScan: { self.flow = .scan }
+            )
+        case .scan:
+            QRScanView(viewModel: QRScanViewModel(repository: payments), onClose: { self.flow = nil }, onResult: { result in
+                switch result.kind {
+                case .promptPay:
+                    self.flow = .transfer(TransferPrefill(kind: .promptPay, proxy: result.proxy, amount: result.amount))
+                case .bill:
+                    let target = BillTarget(billerCode: result.billerCode, ref1: result.ref1 ?? "", ref2: result.ref2 ?? "", amount: result.amount)
+                    self.flow = .bills(nil, target)
+                }
+            })
+        }
+    }
+
+    private func start(_ action: QuickAction) {
+        switch action {
+        case .transfer: flow = .transfer(nil)
+        case .scan: flow = .scan
+        case .payBill: flow = .bills(nil, nil)
+        case .topUp: flow = .bills(.mobile, nil)
+        }
+    }
+
+    /// Back from a flow; balances and lists changed after a payment.
+    private func finish(completed: Bool) {
+        flow = nil
+        guard completed else { return }
+        Task {
+            await dashboardViewModel.load()
+            await paymentsViewModel.load()
+            await historyViewModel?.reload()
+        }
     }
 }
 

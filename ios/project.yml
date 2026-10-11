@@ -42,6 +42,8 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UIUserInterfaceStyle: Light
         INFOPLIST_KEY_NSFaceIDUsageDescription: "ใช้ Face ID เพื่อปลดล็อกแอปและยืนยันธุรกรรม"
+        INFOPLIST_KEY_NSCameraUsageDescription: "ใช้กล้องเพื่อสแกน QR พร้อมเพย์และบาร์โค้ดใบแจ้งหนี้"
+        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: "บันทึกสลิปการโอนลงในคลังรูปภาพ"
         ENABLE_PREVIEWS: YES
     postBuildScripts:
       - name: SwiftLint

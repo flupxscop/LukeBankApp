@@ -5,15 +5,18 @@ struct DashboardView: View {
     @State private var viewModel: DashboardViewModel
     private let onShowHistory: (Account) -> Void
     private let onSelectTransaction: (Transaction) -> Void
+    private let onQuickAction: (QuickAction) -> Void
 
     init(
         viewModel: DashboardViewModel,
         onShowHistory: @escaping (Account) -> Void = { _ in },
-        onSelectTransaction: @escaping (Transaction) -> Void = { _ in }
+        onSelectTransaction: @escaping (Transaction) -> Void = { _ in },
+        onQuickAction: @escaping (QuickAction) -> Void = { _ in }
     ) {
         _viewModel = State(initialValue: viewModel)
         self.onShowHistory = onShowHistory
         self.onSelectTransaction = onSelectTransaction
+        self.onQuickAction = onQuickAction
     }
 
     var body: some View {
@@ -52,7 +55,10 @@ struct DashboardView: View {
                 isHidden: viewModel.isBalanceHidden,
                 onToggleHidden: viewModel.toggleBalanceVisibility
             )
-            QuickActionBar(onSelect: viewModel.select)
+            QuickActionBar { action in
+                viewModel.select(action)
+                onQuickAction(action)
+            }
             SpendingRingCard(spending: summary.spending)
             HStack(alignment: .top, spacing: 12) {
                 CashbackCard(amount: summary.cashbackThisMonth, trend: summary.cashbackTrend, isHidden: viewModel.isBalanceHidden)
