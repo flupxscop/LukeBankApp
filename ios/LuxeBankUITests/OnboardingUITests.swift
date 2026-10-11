@@ -6,7 +6,7 @@ final class OnboardingUITests: XCTestCase {
 
     override func setUp() {
         continueAfterFailure = false
-        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-DisablePushPrompt"]
         // TEST_RUNNER_LUXEBANK_API=http://127.0.0.1:8080 runs the same flow against the real backend.
         if let api = ProcessInfo.processInfo.environment["LUXEBANK_API"] {
             app.launchArguments += ["-LuxeBankAPI", api]

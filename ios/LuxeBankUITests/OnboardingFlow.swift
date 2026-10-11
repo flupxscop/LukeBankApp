@@ -26,7 +26,7 @@ struct OnboardingFlow {
         // The first tap can land while the keyboard's Passwords bar is still animating in.
         if !app.buttons["pinpad.0"].waitForExistence(timeout: 4), submit.exists { submit.tap() }
 
-        XCTAssertTrue(app.buttons["pinpad.0"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.buttons["pinpad.0"].waitForExistence(timeout: 12))
         enter("000000")
 
         XCTAssertTrue(app.staticTexts["Create a PIN"].waitForExistence(timeout: 5))
@@ -43,13 +43,19 @@ struct OnboardingFlow {
 
     /// The screen focuses the first field itself shortly after it appears; let that happen instead of
     /// racing it with a tap, which drops keystrokes. Tap only if the keyboard never shows.
+    /// Waits for the field itself to hold focus: the keyboard can already be up during the screen transition.
     func focus(_ field: XCUIElement) {
-        if app.keyboards.firstMatch.waitForExistence(timeout: 3) { return }
+        if hasFocus(field, timeout: 3) { return }
         for _ in 0..<3 {
             field.tap()
-            if app.keyboards.firstMatch.waitForExistence(timeout: 2) { return }
+            if hasFocus(field, timeout: 2) { return }
         }
-        XCTFail("Keyboard did not appear for \(field.identifier)")
+        XCTFail("Keyboard focus did not reach \(field.identifier)")
+    }
+
+    private func hasFocus(_ field: XCUIElement, timeout: TimeInterval) -> Bool {
+        let focused = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasKeyboardFocus == true"), object: field)
+        return XCTWaiter.wait(for: [focused], timeout: timeout) == .completed
     }
 
     func enter(_ digits: String) {

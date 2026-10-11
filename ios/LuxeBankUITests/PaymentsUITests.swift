@@ -6,7 +6,7 @@ final class PaymentsUITests: XCTestCase {
 
     override func setUp() {
         continueAfterFailure = false
-        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-ResetSession"]
+        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-DisablePushPrompt", "-ResetSession"]
         if let api = ProcessInfo.processInfo.environment["LUXEBANK_API"] {
             app.launchArguments += ["-LuxeBankAPI", api]
         }
@@ -25,6 +25,8 @@ final class PaymentsUITests: XCTestCase {
         proxy.typeText("0812345678")
         app.buttons["transfer.next"].tap()
 
+        // The recipient lookup runs first; the keypad appears after it.
+        XCTAssertTrue(app.buttons["amount.1"].waitForExistence(timeout: 10))
         for key in ["1", "2", "5", "0"] { app.buttons["amount.\(key)"].tap() }
         app.buttons["transfer.review"].tap()
 

@@ -1,0 +1,8 @@
+{
+  "Simulator Target Bundle": "com.luxebank.app",
+  "aps": {
+    "alert": { "title": "เข้าสู่ระบบจากเครื่องใหม่", "body": "หากไม่ใช่คุณ โปรดติดต่อธนาคารทันที" },
+    "sound": "default",
+    "category": "security"
+  }
+}

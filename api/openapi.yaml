@@ -221,23 +221,146 @@ paths:
 
   /me:
     get:
-      summary: Signed-in customer, first name in the requested language
+      summary: Signed-in customer, relationship manager, preferences and unread count (PROF-01)
       operationId: getMe
       parameters:
         - $ref: "#/components/parameters/AcceptLanguage"
       responses:
         "200":
-          description: Customer profile
+          description: Customer profile; names and RM hours in the requested language
           content:
             application/json:
               schema:
                 type: object
-                required: [firstName, tier, maskedPhone]
+                required: [firstName, lastName, tier, maskedPhone, preferences, unreadNotifications]
                 properties:
                   firstName: { type: string }
+                  lastName: { type: string }
                   tier: { type: string }
                   maskedPhone: { type: string }
+                  relationshipManager:
+                    type: [object, "null"]
+                    properties:
+                      name: { type: string }
+                      phone: { type: string }
+                      hours: { type: string }
+                  preferences: { $ref: "#/components/schemas/Preferences" }
+                  unreadNotifications: { type: integer }
         "401": { $ref: "#/components/responses/Error" }
+
+  /me/preferences:
+    patch:
+      summary: Change language and notification preferences (PROF-04, PROF-05)
+      description: |
+        Omitted fields keep their value. Security alerts cannot be turned off (NOTI-02). The language decides the
+        language of push and inbox text; the app applies it to its own UI on the next launch.
+      operationId: updatePreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                language: { type: string, enum: [th, en] }
+                notifyTransactions: { type: boolean }
+                notifyMarketing: { type: boolean }
+      responses:
+        "200":
+          description: Preferences after the change
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Preferences" }
+        "400": { $ref: "#/components/responses/Error" }
+
+  /me/devices:
+    get:
+      summary: The bound device and up to four it replaced (PROF-06)
+      operationId: listDevices
+      responses:
+        "200":
+          description: Devices, active first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    name: { type: string }
+                    registeredAt: { type: string, format: date-time }
+                    revokedAt: { type: [string, "null"], format: date-time }
+                    current: { type: boolean }
+                    biometricEnabled: { type: boolean }
+
+  /me/devices/current/push-token:
+    put:
+      summary: Register this device's APNs token (NOTI-01)
+      description: A token belongs to one device; it is removed from any other device that held it.
+      operationId: registerPushToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string, pattern: "^[A-Za-z0-9:_-]{16,200}$" }
+      responses:
+        "204": { description: Stored }
+        "400": { $ref: "#/components/responses/Error" }
+
+  /notifications:
+    get:
+      summary: In-app inbox, newest first (NOTI-03)
+      description: |
+        Every money movement on a customer account and every security event creates an entry after the business
+        transaction commits; push is sent as well when the preference allows (security alerts always).
+      operationId: listNotifications
+      parameters:
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+      responses:
+        "200":
+          description: One page of the inbox
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        kind: { type: string, enum: [transaction, security, marketing] }
+                        title: { type: string }
+                        body: { type: string }
+                        createdAt: { type: string, format: date-time }
+                        read: { type: boolean }
+                  nextCursor: { type: [string, "null"] }
+                  unreadCount: { type: integer }
+        "400": { $ref: "#/components/responses/Error" }
+
+  /notifications/read-all:
+    post:
+      summary: Mark the whole inbox read
+      operationId: readAllNotifications
+      responses:
+        "204": { description: Done }
+
+  /notifications/{id}/read:
+    post:
+      summary: Mark one entry read; 404 for entries of other customers
+      operationId: readNotification
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Done }
+        "404": { $ref: "#/components/responses/Error" }
 
   /accounts:
     get:
@@ -859,6 +982,13 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
 
   schemas:
+    Preferences:
+      type: object
+      properties:
+        language: { type: string, enum: [th, en] }
+        notifyTransactions: { type: boolean }
+        notifyMarketing: { type: boolean }
+        notifySecurity: { type: boolean, const: true, description: Always true (NOTI-02) }
     Money:
       type: string
       pattern: "^-?\\d+\\.\\d{2}$"

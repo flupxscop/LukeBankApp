@@ -1,0 +1,8 @@
+{
+  "Simulator Target Bundle": "com.luxebank.app",
+  "aps": {
+    "alert": { "title": "เงินเข้า ฿45,000.00", "body": "Payroll · บัญชี x4521" },
+    "sound": "default",
+    "category": "transaction"
+  }
+}

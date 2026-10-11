@@ -6,17 +6,23 @@ struct DashboardView: View {
     private let onShowHistory: (Account) -> Void
     private let onSelectTransaction: (Transaction) -> Void
     private let onQuickAction: (QuickAction) -> Void
+    private let unreadCount: Int
+    private let onOpenInbox: () -> Void
 
     init(
         viewModel: DashboardViewModel,
         onShowHistory: @escaping (Account) -> Void = { _ in },
         onSelectTransaction: @escaping (Transaction) -> Void = { _ in },
-        onQuickAction: @escaping (QuickAction) -> Void = { _ in }
+        onQuickAction: @escaping (QuickAction) -> Void = { _ in },
+        unreadCount: Int = 0,
+        onOpenInbox: @escaping () -> Void = {}
     ) {
         _viewModel = State(initialValue: viewModel)
         self.onShowHistory = onShowHistory
         self.onSelectTransaction = onSelectTransaction
         self.onQuickAction = onQuickAction
+        self.unreadCount = unreadCount
+        self.onOpenInbox = onOpenInbox
     }
 
     var body: some View {
@@ -84,6 +90,18 @@ struct DashboardView: View {
                     .foregroundStyle(BankTheme.ink)
             }
             Spacer()
+            Button(action: onOpenInbox) {
+                Image(systemName: "bell")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(BankTheme.ink)
+                    .frame(width: 46, height: 46)
+                    .background(BankTheme.surface, in: Circle())
+                    .cardShadow(radius: 14, y: 4, opacity: 0.08)
+                    .overlay(alignment: .topTrailing) { UnreadBadge(count: unreadCount).offset(x: 4, y: -4) }
+            }
+            .accessibilityLabel(Text("inbox.title"))
+            .accessibilityValue(unreadCount > 0 ? Text("inbox.unread \(unreadCount)") : Text(verbatim: ""))
+            .accessibilityIdentifier("dashboard.inbox")
             AvatarBadge(initial: String(summary.customerFirstName.prefix(1)))
         }
         .padding(.horizontal, 4)

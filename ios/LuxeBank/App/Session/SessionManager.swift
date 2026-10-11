@@ -69,14 +69,33 @@ final class SessionManager {
         try? storage.set(profile.firstName, for: StorageKey.firstName)
     }
 
+    /// From onboarding (not yet unlocked) or from Settings (PROF-03).
     func enableBiometric() async throws {
-        guard let accessToken else { throw APIError.unauthorized }
+        let token = state == .unlocked ? try await validAccessToken() : accessToken
+        guard let accessToken = token else { throw APIError.unauthorized }
         let publicKey = try keys.createKey(.biometric)
         do {
             try await repository.enableBiometric(publicKey: publicKey, accessToken: accessToken)
             isBiometricEnabled = true
         } catch {
             keys.deleteKey(.biometric)
+            throw error
+        }
+    }
+
+    /// PROF-03: the server forgets the key first, then the Secure Enclave key is deleted.
+    func disableBiometric() async throws {
+        try await repository.disableBiometric(accessToken: try await validAccessToken())
+        keys.deleteKey(.biometric)
+        isBiometricEnabled = false
+    }
+
+    /// PROF-02. Too many wrong current PINs lock the device, as at login.
+    func changePin(current: String, new: String) async throws {
+        do {
+            try await repository.changePin(currentPin: current, newPin: new, accessToken: try await validAccessToken())
+        } catch let error as APIError where error.code == "PIN_LOCKED" {
+            resetDevice(.pinLocked)
             throw error
         }
     }

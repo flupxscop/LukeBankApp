@@ -6,7 +6,7 @@ final class CardsUITests: XCTestCase {
 
     override func setUp() {
         continueAfterFailure = false
-        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-ResetSession"]
+        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-DisablePushPrompt", "-ResetSession"]
         app.launch()
         OnboardingFlow(app: app).run()
     }

@@ -13,6 +13,8 @@ This guide lists the seams and what replacing each one involves.
 | PromptPay directory | Any valid mobile / national ID / e-wallet resolves to a stub person | `integration/stub/PaymentStubs.kt` |
 | Bill payment aggregator | Stable amount due on the 25th per reference; all-zero references unknown | `integration/stub/PaymentStubs.kt` |
 | Card processor | Issues test cards; PAN/CVV derived from the token (Luhn-valid test BINs), never stored; rules and blocks are accepted | `integration/stub/StubCardProcessor.kt` |
+| Push notifications (APNs) | Logged (category and last 6 token characters only); the in-app inbox always receives the entry | `integration/stub/StubPushNotifier.kt` |
+| RM chat, privileges, PDPA/terms text | Client-side only: chat stays on the phone with an automatic reply; static copy | `ios/LuxeBank/Features/Profile` |
 | Money outside LuxeBank | Posted to the internal `INT-CLEARING` account | `ledger/LedgerTypes.kt` (`InternalAccounts`) |
 | Customer data | Demo customer, accounts and a year of history in profile `local` | `config/LocalDemoData.kt` |
 | iOS data | `Mock*Repository` when no backend is configured (Debug only) | `ios/LuxeBank/Data/Mock` |
@@ -31,6 +33,7 @@ Each external system is a port (interface) in `backend/src/main/kotlin/com/luxeb
 | `PromptPayDirectory` | `luxebank.integrations.promptpay` | `payments/RecipientResolver` |
 | `BillPaymentGateway` | `luxebank.integrations.bills` | `payments/BillsController`, `payments/PaymentExecutor` |
 | `CardProcessor` | `luxebank.integrations.cards` | `cards/CardService`, `config/LocalDemoData` |
+| `PushNotifier` | `luxebank.integrations.push` | `notifications/NotificationService` |
 
 Steps for, say, a real ITMX gateway:
 
@@ -57,6 +60,12 @@ These are deliberately not built in the simulation. The schema and code leave ro
 - **Encrypted columns** for payee account numbers and references (SPEC 13.3).
 - **Card purchases** arrive from the processor's authorisation feed; post them through `LedgerService.post` with
   `EntryDetails(cardId = …)` against the card's account (credit) or linked account (debit).
+- **Real push (APNs)**: an adapter that signs a provider JWT with the APNs auth key (kept in a secrets manager),
+  sends over HTTP/2 to `api.push.apple.com`, and clears `devices.push_token` when APNs answers `410 Unregistered`.
+  The app also needs the Push Notifications capability (`aps-environment`) in a paid team's provisioning profile.
+  Keep push text free of balances; it shows on the lock screen. For volume, move delivery from the in-process
+  `@Async` listener to an outbox table plus a worker so a restart never loses a notification.
+- **RM chat** behind a messaging port (the RM's CRM or a chat vendor) instead of the on-device simulation.
 - **Encrypting revealed card details to the device** (ECIES to a key-agreement key in the Secure Enclave).
 
 ## 3. Backend: make the bank side real
