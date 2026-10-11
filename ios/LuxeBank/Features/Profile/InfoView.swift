@@ -67,11 +67,17 @@ struct PrivilegesView: View {
     let tier: String
     let onBack: () -> Void
 
-    private let perks: [(String, LocalizedStringResource, LocalizedStringResource)] = [
-        ("fork.knife", "privileges.dining", "privileges.dining.body"),
-        ("airplane", "privileges.lounge", "privileges.lounge.body"),
-        ("arrow.left.arrow.right", "privileges.fx", "privileges.fx.body"),
-        ("person.badge.shield.checkmark", "privileges.rm", "privileges.rm.body"),
+    private struct Perk {
+        let symbol: String
+        let title: LocalizedStringResource
+        let detail: LocalizedStringResource
+    }
+
+    private let perks = [
+        Perk(symbol: "fork.knife", title: "privileges.dining", detail: "privileges.dining.body"),
+        Perk(symbol: "airplane", title: "privileges.lounge", detail: "privileges.lounge.body"),
+        Perk(symbol: "arrow.left.arrow.right", title: "privileges.fx", detail: "privileges.fx.body"),
+        Perk(symbol: "person.badge.shield.checkmark", title: "privileges.rm", detail: "privileges.rm.body"),
     ]
 
     var body: some View {
@@ -86,10 +92,10 @@ struct PrivilegesView: View {
                     ForEach(Array(perks.enumerated()), id: \.offset) { index, perk in
                         if index > 0 { SettingsDivider() }
                         HStack(alignment: .top, spacing: 14) {
-                            IconTile(content: .symbol(perk.0), size: 40, tint: BankTheme.caution, fill: BankTheme.cautionTint)
+                            IconTile(content: .symbol(perk.symbol), size: 40, tint: BankTheme.caution, fill: BankTheme.cautionTint)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(perk.1).font(BankFont.body(15, bold: true))
-                                Text(perk.2).font(BankFont.caption(13)).foregroundStyle(BankTheme.secondaryText)
+                                Text(perk.title).font(BankFont.body(15, bold: true))
+                                Text(perk.detail).font(BankFont.caption(13)).foregroundStyle(BankTheme.secondaryText)
                             }
                         }
                         .padding(.vertical, 14)

@@ -20,7 +20,7 @@ final class RemoteProfileRepository: ProfileRepository {
     }
 
     func profile() async throws -> BankProfile {
-        let dto: ProfileDTO.Me = try await api.send(APIRequest(method: "GET", path: "me"))
+        let dto: ProfileDTO.Profile = try await api.send(APIRequest(method: "GET", path: "me"))
         return try dto.domain()
     }
 
@@ -62,7 +62,7 @@ final class RemoteProfileRepository: ProfileRepository {
 
 /// Wire format of `/me` and `/notifications` (see api/openapi.yaml).
 enum ProfileDTO {
-    struct Me: Decodable {
+    struct Profile: Decodable {
         let firstName: String
         let lastName: String
         let tier: String
