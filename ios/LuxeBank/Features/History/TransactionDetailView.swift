@@ -72,11 +72,11 @@ struct TransactionDetailView: View {
                     Text(verbatim: detail.accountName + " · " + detail.accountMaskedNumber.suffix(4))
                 }
                 divider
-                row("detail.category") { categoryControl(transaction.category) }
+                row("detail.category", interactive: true) { categoryControl(transaction.category) }
                 divider
-                row("detail.memo") { memoControl(transaction.memo) }
+                row("detail.memo", interactive: true) { memoControl(transaction.memo) }
                 divider
-                row("detail.reference") { referenceControl(detail.referenceNo) }
+                row("detail.reference", interactive: true) { referenceControl(detail.referenceNo) }
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 4)
@@ -120,7 +120,8 @@ struct TransactionDetailView: View {
         Rectangle().fill(BankTheme.line).frame(height: 1)
     }
 
-    private func row<Value: View>(_ title: LocalizedStringKey, @ViewBuilder value: () -> Value) -> some View {
+    /// Static rows read as one VoiceOver element; rows with controls keep the control reachable on its own.
+    private func row<Value: View>(_ title: LocalizedStringKey, interactive: Bool = false, @ViewBuilder value: () -> Value) -> some View {
         HStack(spacing: 16) {
             Text(title)
                 .font(BankFont.body(14))
@@ -132,7 +133,7 @@ struct TransactionDetailView: View {
                 .multilineTextAlignment(.trailing)
         }
         .frame(minHeight: 50)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: interactive ? .contain : .combine)
     }
 
     @ViewBuilder

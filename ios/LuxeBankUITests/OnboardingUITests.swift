@@ -34,7 +34,7 @@ final class OnboardingUITests: XCTestCase {
 
         let citizenID = app.textFields["register.citizenID"]
         XCTAssertTrue(citizenID.waitForExistence(timeout: 5))
-        citizenID.tap()
+        focus(citizenID)
         citizenID.typeText("1234567890121")
         XCTAssertEqual(citizenID.value as? String, "1-2345-67890-12-1")
 
@@ -89,7 +89,7 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Reference"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Completed"].exists)
 
-        let category = app.buttons.matching(identifier: "detail.category").firstMatch
+        let category = app.buttons["detail.category"]
         if category.exists {
             category.tap()
             app.buttons["Shopping"].firstMatch.tap()
@@ -99,6 +99,15 @@ final class OnboardingUITests: XCTestCase {
 
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.staticTexts["History"].waitForExistence(timeout: 5))
+    }
+
+    /// The screen also focuses the first field itself after a short delay; tap until the keyboard is really up.
+    private func focus(_ field: XCUIElement) {
+        for _ in 0..<3 {
+            field.tap()
+            if app.keyboards.firstMatch.waitForExistence(timeout: 2) { return }
+        }
+        XCTFail("Keyboard did not appear for \(field.identifier)")
     }
 
     private func enter(_ digits: String) {
