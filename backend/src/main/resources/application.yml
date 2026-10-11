@@ -62,6 +62,7 @@ luxebank:
     promptpay: stub
     bills: stub
     cards: stub
+    push: stub
   security:
     pepper: ${LUXEBANK_PEPPER}
     identity-key: ${LUXEBANK_IDENTITY_KEY}

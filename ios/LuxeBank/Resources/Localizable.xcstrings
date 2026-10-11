@@ -1531,6 +1531,108 @@
         }
       }
     },
+    "changePin.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm your new PIN"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยืนยัน PIN ใหม่"
+          }
+        }
+      }
+    },
+    "changePin.current": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter your current PIN"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใส่ PIN ปัจจุบัน"
+          }
+        }
+      }
+    },
+    "changePin.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN changed"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปลี่ยน PIN แล้ว"
+          }
+        }
+      }
+    },
+    "changePin.done.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use your new PIN to unlock and confirm from now on."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้ PIN ใหม่ในการปลดล็อกและยืนยันรายการครั้งถัดไป"
+          }
+        }
+      }
+    },
+    "changePin.new": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a new PIN"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้ง PIN ใหม่"
+          }
+        }
+      }
+    },
+    "changePin.sameAsCurrent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your new PIN must differ from the current one"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN ใหม่ต้องไม่ซ้ำกับ PIN เดิม"
+          }
+        }
+      }
+    },
     "channel.bill": {
       "extractionState": "manual",
       "localizations": {
@@ -1684,6 +1786,91 @@
         }
       }
     },
+    "chat.autoReply": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message received. Your relationship manager will reply during business hours."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ได้รับข้อความแล้ว ผู้ดูแลบัญชีจะตอบกลับในเวลาทำการ"
+          }
+        }
+      }
+    },
+    "chat.greeting %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hello, this is %@. How can I help you today?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สวัสดีค่ะ %@ ยินดีให้บริการ มีอะไรให้ช่วยไหมคะ"
+          }
+        }
+      }
+    },
+    "chat.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a message"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "พิมพ์ข้อความ"
+          }
+        }
+      }
+    },
+    "chat.send": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่ง"
+          }
+        }
+      }
+    },
+    "chat.simulated": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simulated chat · messages stay on this phone"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แชทจำลอง · ข้อความอยู่ในเครื่องนี้เท่านั้น"
+          }
+        }
+      }
+    },
     "comingSoon.title": {
       "extractionState": "manual",
       "localizations": {
@@ -1748,6 +1935,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "ปิด"
+          }
+        }
+      }
+    },
+    "common.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เสร็จสิ้น"
           }
         }
       }
@@ -3316,6 +3520,482 @@
         }
       }
     },
+    "inbox.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No notifications yet"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่มีการแจ้งเตือน"
+          }
+        }
+      }
+    },
+    "inbox.empty.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money in and out and security alerts will appear here"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รายการเงินเข้า-ออกและการแจ้งเตือนความปลอดภัยจะแสดงที่นี่"
+          }
+        }
+      }
+    },
+    "inbox.readAll": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read all"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อ่านทั้งหมด"
+          }
+        }
+      }
+    },
+    "inbox.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การแจ้งเตือน"
+          }
+        }
+      }
+    },
+    "inbox.unread %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld unread"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่อ่าน %lld รายการ"
+          }
+        }
+      }
+    },
+    "inbox.unreadItem": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unread"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่อ่าน"
+          }
+        }
+      }
+    },
+    "info.help": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help centre"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ศูนย์ช่วยเหลือ"
+          }
+        }
+      }
+    },
+    "info.help.contact": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contact us"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ติดต่อธนาคาร"
+          }
+        }
+      }
+    },
+    "info.help.contact.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Call centre 02-123-4567, 24 hours (a fictitious number in this simulation)."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Call Center 02-123-4567 ตลอด 24 ชั่วโมง (หมายเลขสมมติในระบบจำลอง)"
+          }
+        }
+      }
+    },
+    "info.help.fraud": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A transaction you don't recognise"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "พบรายการที่ไม่ได้ทำ"
+          }
+        }
+      }
+    },
+    "info.help.fraud.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Freeze the card from its screen, then contact your relationship manager or the call centre straight away."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ระงับบัตรชั่วคราวจากหน้าบัตร แล้วติดต่อผู้ดูแลบัญชีหรือ Call Center ทันที"
+          }
+        }
+      }
+    },
+    "info.help.lost": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lost or stolen card"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บัตรหายหรือถูกขโมย"
+          }
+        }
+      }
+    },
+    "info.help.lost.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the Cards tab, choose the card and tap \"Report lost\". The card is blocked at once and a replacement is issued."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไปที่แท็บบัตร เลือกบัตร แล้วกด \"แจ้งบัตรหาย\" ระบบจะปิดบัตรทันทีและออกบัตรใหม่ให้"
+          }
+        }
+      }
+    },
+    "info.privacy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy (PDPA)"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ความเป็นส่วนตัว (PDPA)"
+          }
+        }
+      }
+    },
+    "info.privacy.collect": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What we collect"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ข้อมูลที่เราเก็บ"
+          }
+        }
+      }
+    },
+    "info.privacy.collect.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identity, account and transaction data, and details of your bound device. Face ID data stays on your phone and never reaches the bank."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ข้อมูลระบุตัวตน ข้อมูลบัญชีและธุรกรรม และข้อมูลอุปกรณ์ที่ผูกไว้ ข้อมูลใบหน้าอยู่ในเครื่องของคุณเท่านั้น ธนาคารไม่ได้รับ"
+          }
+        }
+      }
+    },
+    "info.privacy.rights": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your rights"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สิทธิของคุณ"
+          }
+        }
+      }
+    },
+    "info.privacy.rights.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can ask to access, correct, delete or object to the use of your data under the Personal Data Protection Act 2019, through your relationship manager."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ขอเข้าถึง แก้ไข ลบ หรือคัดค้านการใช้ข้อมูลได้ตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 ผ่านผู้ดูแลบัญชี"
+          }
+        }
+      }
+    },
+    "info.privacy.use": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How we use it"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เราใช้ข้อมูลอย่างไร"
+          }
+        }
+      }
+    },
+    "info.privacy.use.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To provide the service, prevent fraud and meet legal duties. Marketing is sent only if you turn it on in Settings."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เพื่อให้บริการ ป้องกันการทุจริต และปฏิบัติตามกฎหมาย ข่าวสารการตลาดส่งเฉพาะเมื่อคุณเปิดรับในการตั้งค่า"
+          }
+        }
+      }
+    },
+    "info.simulation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This app is a simulation. This text is an example only and is not a real legal document."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แอปนี้เป็นระบบจำลอง เนื้อหานี้เป็นตัวอย่างเท่านั้น ไม่ใช่ข้อกำหนดทางกฎหมายจริง"
+          }
+        }
+      }
+    },
+    "info.terms": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terms"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ข้อกำหนด"
+          }
+        }
+      }
+    },
+    "info.terms.device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device binding"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การผูกอุปกรณ์"
+          }
+        }
+      }
+    },
+    "info.terms.device.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One phone at a time. Registering a new phone automatically removes the old one."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้งานได้ครั้งละหนึ่งเครื่อง การลงทะเบียนเครื่องใหม่จะยกเลิกเครื่องเดิมโดยอัตโนมัติ"
+          }
+        }
+      }
+    },
+    "info.terms.limits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limits and confirmation"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วงเงินและการยืนยัน"
+          }
+        }
+      }
+    },
+    "info.terms.limits.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every payment needs your PIN or Face ID, and payments of ฿50,000 or more need Face ID."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทุกรายการยืนยันด้วย PIN หรือ Face ID และรายการตั้งแต่ ฿50,000 ต้องยืนยันด้วย Face ID"
+          }
+        }
+      }
+    },
+    "language.english": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English"
+          }
+        }
+      }
+    },
+    "language.thai": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไทย"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไทย"
+          }
+        }
+      }
+    },
     "lock.autoLock": {
       "extractionState": "manual",
       "localizations": {
@@ -3380,6 +4060,108 @@
           "stringUnit": {
             "state": "translated",
             "value": "กรอก PIN เพื่อเข้าสู่ระบบ"
+          }
+        }
+      }
+    },
+    "mock.inbox.moneyIn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money in ฿45,000.00"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เงินเข้า ฿45,000.00"
+          }
+        }
+      }
+    },
+    "mock.inbox.moneyOut": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money out ฿285.00"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เงินออก ฿285.00"
+          }
+        }
+      }
+    },
+    "mock.inbox.newDeviceBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If this wasn't you, call LuxeBank right away."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หากไม่ใช่คุณ โปรดติดต่อธนาคารทันที"
+          }
+        }
+      }
+    },
+    "mock.inbox.newDeviceTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New device signed in"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เข้าสู่ระบบจากเครื่องใหม่"
+          }
+        }
+      }
+    },
+    "mock.inbox.offerBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5% cashback at partner restaurants until the end of the month"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รับเครดิตเงินคืน 5% ที่ร้านอาหารพันธมิตรถึงสิ้นเดือนนี้"
+          }
+        }
+      }
+    },
+    "mock.inbox.offerTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GOLD member offer"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สิทธิพิเศษสมาชิก GOLD"
           }
         }
       }
@@ -3707,6 +4489,142 @@
         }
       }
     },
+    "privileges.dining": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partner dining"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ร้านอาหารพันธมิตร"
+          }
+        }
+      }
+    },
+    "privileges.dining.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to 5% cashback every month"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เครดิตเงินคืนสูงสุด 5% ทุกเดือน"
+          }
+        }
+      }
+    },
+    "privileges.fx": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Better exchange rates"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อัตราแลกเปลี่ยนพิเศษ"
+          }
+        }
+      }
+    },
+    "privileges.fx.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lower fees on foreign currency"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่วนลดค่าธรรมเนียมแลกเงินตราต่างประเทศ"
+          }
+        }
+      }
+    },
+    "privileges.lounge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Airport lounges"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ห้องรับรองสนามบิน"
+          }
+        }
+      }
+    },
+    "privileges.lounge.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Four free visits a year"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เข้าใช้ฟรีปีละ 4 ครั้ง"
+          }
+        }
+      }
+    },
+    "privileges.rm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personal relationship manager"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ผู้ดูแลบัญชีส่วนตัว"
+          }
+        }
+      }
+    },
+    "privileges.rm.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Financial advice during business hours"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปรึกษาเรื่องการเงินได้ในเวลาทำการ"
+          }
+        }
+      }
+    },
     "profile.avatar": {
       "extractionState": "manual",
       "localizations": {
@@ -3724,6 +4642,142 @@
         }
       }
     },
+    "profile.greeting %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คุณ%@"
+          }
+        }
+      }
+    },
+    "profile.member %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ MEMBER"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ MEMBER"
+          }
+        }
+      }
+    },
+    "profile.menu.language": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ภาษา"
+          }
+        }
+      }
+    },
+    "profile.menu.notifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การแจ้งเตือน"
+          }
+        }
+      }
+    },
+    "profile.menu.privileges": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Member privileges"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สิทธิพิเศษสมาชิก"
+          }
+        }
+      }
+    },
+    "profile.menu.privileges.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offers and services for you"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่วนลดและบริการสำหรับคุณ"
+          }
+        }
+      }
+    },
+    "profile.menu.security": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ความปลอดภัย"
+          }
+        }
+      }
+    },
+    "profile.menu.security.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN, Face ID and devices"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN, Face ID และอุปกรณ์"
+          }
+        }
+      }
+    },
     "profile.placeholder": {
       "extractionState": "manual",
       "localizations": {
@@ -3737,6 +4791,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "ข้อมูลบัญชี ความปลอดภัย และการตั้งค่า"
+          }
+        }
+      }
+    },
+    "profile.rm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your relationship manager"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ผู้ดูแลบัญชีส่วนตัว"
+          }
+        }
+      }
+    },
+    "profile.rm.call": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Call"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โทร"
+          }
+        }
+      }
+    },
+    "profile.rm.chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แชท"
           }
         }
       }
@@ -4094,6 +5199,431 @@
           "stringUnit": {
             "state": "translated",
             "value": "เป้าหมายออม"
+          }
+        }
+      }
+    },
+    "settings.autoLock": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto-lock"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล็อกอัตโนมัติ"
+          }
+        }
+      }
+    },
+    "settings.autoLock.value": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 minutes"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 นาที"
+          }
+        }
+      }
+    },
+    "settings.changePin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change PIN"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปลี่ยน PIN"
+          }
+        }
+      }
+    },
+    "settings.devices": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registered devices"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อุปกรณ์ที่ลงทะเบียน"
+          }
+        }
+      }
+    },
+    "settings.devices.active": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้งานอยู่"
+          }
+        }
+      }
+    },
+    "settings.devices.revoked %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยกเลิกเมื่อ %@"
+          }
+        }
+      }
+    },
+    "settings.devices.since %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registered %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลงทะเบียนเมื่อ %@"
+          }
+        }
+      }
+    },
+    "settings.devices.this": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This phone"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เครื่องนี้"
+          }
+        }
+      }
+    },
+    "settings.faceID": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID"
+          }
+        }
+      }
+    },
+    "settings.faceID.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up Face ID in iPhone Settings first"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งค่า Face ID ในการตั้งค่า iPhone ก่อน"
+          }
+        }
+      }
+    },
+    "settings.language": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ภาษา"
+          }
+        }
+      }
+    },
+    "settings.language.restart": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app switches language next time it opens; notifications use it straight away."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ภาษาจะเปลี่ยนเมื่อเปิดแอปครั้งถัดไป การแจ้งเตือนจะใช้ภาษานี้ทันที"
+          }
+        }
+      }
+    },
+    "settings.logout": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out and unbind this phone"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออกจากระบบและยกเลิกการผูกเครื่อง"
+          }
+        }
+      }
+    },
+    "settings.logout.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออกจากระบบ"
+          }
+        }
+      }
+    },
+    "settings.logout.confirmTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออกจากระบบ?"
+          }
+        }
+      }
+    },
+    "settings.logout.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This phone will be unbound. You'll need to verify with an OTP to use it again."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เครื่องนี้จะถูกยกเลิกการผูก ต้องยืนยันตัวตนด้วย OTP เพื่อใช้งานอีกครั้ง"
+          }
+        }
+      }
+    },
+    "settings.notifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การแจ้งเตือน"
+          }
+        }
+      }
+    },
+    "settings.notify.always": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always on"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดเสมอ"
+          }
+        }
+      }
+    },
+    "settings.notify.marketing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "News and offers"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ข่าวสารและสิทธิพิเศษ"
+          }
+        }
+      }
+    },
+    "settings.notify.security": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ความปลอดภัย"
+          }
+        }
+      }
+    },
+    "settings.notify.security.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New devices, PIN and cards"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เครื่องใหม่ PIN และบัตร"
+          }
+        }
+      }
+    },
+    "settings.notify.transactions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money in and out"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เงินเข้า-ออก"
+          }
+        }
+      }
+    },
+    "settings.notify.transactions.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every transaction, instantly"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แจ้งทุกรายการทันที"
+          }
+        }
+      }
+    },
+    "settings.security": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ความปลอดภัย"
+          }
+        }
+      }
+    },
+    "settings.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งค่า"
           }
         }
       }

@@ -4,7 +4,7 @@ STRIDE review of the system as designed in [SPEC.md](../SPEC.md). Update this fi
 
 | Field | Value |
 |---|---|
-| Version | 0.6 (M4 cards) |
+| Version | 0.7 (M5 profile and notifications) |
 | Date | 2026-10-11 |
 | Scope | iOS app, `/api/v1` backend, PostgreSQL, Redis, external adapters (stubs) |
 
@@ -46,6 +46,10 @@ STRIDE review of the system as designed in [SPEC.md](../SPEC.md). Update this fi
 | I5 | Release build ships mock data or an unpinned connection | iOS | Release refuses to start without an HTTPS base URL and SPKI pins; mocks and `-LuxeBankAPI` compile into Debug only (D22) | **Done (M3 review, tested)** |
 | I6 | Card number or CVV leaked from storage, cache or screen | Cards | No PAN/CVV in LuxeBank's DB (processor token only); reveal needs a Face ID step-up and is audited; `Cache-Control: no-store`; app hides after 30 s, when backgrounded or screen-captured, and marks the fields privacy-sensitive | **Done (M4, tested)** — encrypting the reveal to a device key is a documented extension (D27) |
 | S4 | Someone with an unlocked phone blocks or reveals a card | Cards | Report lost needs the PIN, reveal needs Face ID, both on a single-use device challenge; shared PIN lockout | **Done (M4, tested)** |
+| I7 | Push text read from a locked phone's lock screen | Notifications | Push and inbox text carry the amount, merchant and the last four digits of the account only, never a balance or full number; security alerts name the event, not the detail (D28) | **Done (M5)** |
+| I8 | Another customer's inbox read or marked read (BOLA) | API | Notification queries scoped by owner; reading a foreign id answers 404 like a missing one | **Done (M5, tested)** |
+| S5 | Pushes for one customer delivered to another phone | Notifications | Push token stored on the bound device only; registering a token removes it from any other device; revoked devices never receive pushes | **Done (M5)** |
+| R2 | Customer denies changing PIN, Face ID or preferences | Profile | PIN_CHANGED, BIOMETRIC_*, PREFERENCES_CHANGED, PUSH_TOKEN_REGISTERED in the audit log; security alerts to the customer for PIN, Face ID, new device and card events (NOTI-02) | **Done (M5)** |
 | I3 | Man-in-the-middle on hostile Wi-Fi | Network | ATS with no exceptions (Debug allows localhost only) + public-key pinning (13.1 M5) | **Built (M1); pins added when the production host exists** |
 | I4 | Data extracted from a lost or jailbroken phone | Device | Keychain `WhenUnlockedThisDeviceOnly`, Secure Enclave keys, jailbreak signal (AUTH-11) | **Done (M1)**; jailbreak warning UI in M5 |
 | D1 | Brute force or flooding of login/OTP/transfer endpoints | API | Redis rate limit per IP + endpoint, per-customer limit on payment name inquiries (enumeration, API6), password/OTP/PIN lockouts shared by login and payments, request size limits, WAF (13.1 API4) | **Done for auth (M1) and payments (M3)**; WAF at deploy |

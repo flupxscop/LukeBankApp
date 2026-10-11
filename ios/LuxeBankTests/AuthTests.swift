@@ -182,7 +182,7 @@ struct SessionManagerTests {
         return repository
     }()
 
-    private func registeredSession() async throws -> SessionManager {
+    func registeredSession() async throws -> SessionManager {
         let session = SessionManager(repository: repository, storage: storage, keys: keys, now: { [clock] in clock.now })
         _ = try keys.createKey(.device)
         let auth = try await repository.registerDevice(registrationToken: "t", pin: "482193", deviceName: "iPhone", publicKey: Data())

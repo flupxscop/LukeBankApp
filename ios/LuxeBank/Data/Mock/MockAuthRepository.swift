@@ -10,6 +10,7 @@ final class MockAuthRepository: AuthRepository {
     private var pinByDevice: [UUID: String] = [:]
     private var failedPins = 0
     private var failedPasswords = 0
+    private var currentDevice: UUID?
     var delay: Duration = .milliseconds(350)
 
     func startRegistration(citizenID: String, password: String) async throws -> RegistrationChallenge {
@@ -79,8 +80,27 @@ final class MockAuthRepository: AuthRepository {
 
     func logout(accessToken: String) async throws {}
 
+    func disableBiometric(accessToken: String) async throws {
+        try await pause()
+    }
+
+    func changePin(currentPin: String, newPin: String, accessToken: String) async throws {
+        try await pause()
+        let device = currentDevice ?? UUID()
+        let expected = pinByDevice[device] ?? currentPin
+        guard currentPin == expected else {
+            failedPins += 1
+            if failedPins >= 5 { throw APIError.server(code: "PIN_LOCKED", message: "locked", remainingAttempts: nil) }
+            throw APIError.server(code: "PIN_INVALID", message: "invalid", remainingAttempts: 5 - failedPins)
+        }
+        guard PinRules.isAcceptable(newPin) else { throw APIError.server(code: "PIN_POLICY_VIOLATION", message: "weak", remainingAttempts: nil) }
+        failedPins = 0
+        pinByDevice[device] = newPin
+    }
+
     private func session(_ deviceID: UUID) -> AuthSession {
-        AuthSession(deviceId: deviceID, accessToken: "mock-access", refreshToken: "mock-refresh", expiresInSeconds: 900)
+        currentDevice = deviceID
+        return AuthSession(deviceId: deviceID, accessToken: "mock-access", refreshToken: "mock-refresh", expiresInSeconds: 900)
     }
 
     private func pause() async throws {

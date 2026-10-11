@@ -11,6 +11,8 @@ import com.luxebank.integration.CardProcessor
 import com.luxebank.integration.CardRules
 import com.luxebank.ledger.BankTime
 import com.luxebank.ledger.Money
+import com.luxebank.notifications.SecurityEvent
+import com.luxebank.notifications.SecurityEventType
 import com.luxebank.transactions.Cursor
 import com.luxebank.transactions.TransactionPageResponse
 import com.luxebank.transactions.TransactionQueries
@@ -18,6 +20,7 @@ import com.luxebank.transactions.TransactionResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.CacheControl
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -96,6 +99,7 @@ class CardService(
     private val audit: AuditService,
     private val tx: TransactionTemplate,
     private val clock: Clock,
+    private val events: ApplicationEventPublisher,
 ) {
     @Transactional(readOnly = true)
     fun list(userId: UUID): List<CardResponse> = cards.listForUser(userId).map(::response)
@@ -122,6 +126,9 @@ class CardService(
             current.userId,
             current.deviceId,
             mapOf("cardId" to id.toString()),
+        )
+        events.publishEvent(
+            SecurityEvent(current.userId, if (frozen) SecurityEventType.CARD_FROZEN else SecurityEventType.CARD_UNFROZEN, card.last4),
         )
         return detail(current.userId, id)
     }
@@ -166,7 +173,7 @@ class CardService(
         id: UUID,
         proof: StepUpProof,
     ): CardResponse {
-        cards.findOwned(current.userId, id)?.takeIf { it.status in USABLE } ?: throw notFound()
+        val lost = cards.findOwned(current.userId, id)?.takeIf { it.status in USABLE } ?: throw notFound()
         stepUp.verify(current, proof, requireBiometric = false)
         val replacement = checkNotNull(tx.execute { replace(current.userId, id) })
         audit.record(
@@ -175,6 +182,7 @@ class CardService(
             current.deviceId,
             mapOf("cardId" to id.toString(), "replacementId" to replacement.toString()),
         )
+        events.publishEvent(SecurityEvent(current.userId, SecurityEventType.CARD_REPORTED_LOST, lost.last4))
         return detail(current.userId, replacement)
     }
 
@@ -221,6 +229,7 @@ class CardService(
         stepUp.verify(current, proof, requireBiometric = true)
         val secrets = processor.reveal(card.tokenRef)
         audit.record(AuditAction.CARD_DETAILS_VIEWED, current.userId, current.deviceId, mapOf("cardId" to id.toString()))
+        events.publishEvent(SecurityEvent(current.userId, SecurityEventType.CARD_DETAILS_VIEWED, card.last4))
         return SensitiveResponse(secrets.pan, secrets.cvv, expiry(card), VISIBLE_SECONDS)
     }
 

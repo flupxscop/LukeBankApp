@@ -31,12 +31,12 @@ final class AuthorizedAPI {
     }
 
     /// For endpoints answering 204 No Content.
-    func sendWithoutResponse(method: String, path: String) async throws {
+    func sendWithoutResponse(method: String, path: String, body: Encodable? = nil) async throws {
         guard let tokens else { throw APIError.unauthorized }
         do {
-            try await client.sendWithoutResponse(method: method, path: path, accessToken: try await tokens.validAccessToken())
+            try await client.sendWithoutResponse(method: method, path: path, body: body, accessToken: try await tokens.validAccessToken())
         } catch APIError.unauthorized {
-            try await client.sendWithoutResponse(method: method, path: path, accessToken: try await tokens.refreshAccessToken())
+            try await client.sendWithoutResponse(method: method, path: path, body: body, accessToken: try await tokens.refreshAccessToken())
         }
     }
 }

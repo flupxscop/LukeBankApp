@@ -10,16 +10,21 @@ struct ContentView: View {
     @State private var selectedTab: BankTab = .home
     @State private var homePath: [HomeRoute] = []
     @State private var cardPath: [CardRoute] = []
+    @State private var profilePath: [ProfileRoute] = []
     @State private var dashboardViewModel: DashboardViewModel
     @State private var historyViewModel: HistoryViewModel?
     @State private var paymentsViewModel: PaymentsViewModel
     @State private var cardsViewModel: CardsViewModel
+    @State private var profileViewModel: ProfileViewModel
     @State private var flow: PaymentFlow?
     private let repository: BankRepository
     private let payments: PaymentRepository
     private let authorizer: PaymentAuthorizing
+    private let profile: ProfileRepository
+    private let push = PushRegistrar.shared
+    private let asksForPush: Bool
 
-    init(environment: AppEnvironment, session: SessionManager) {
+    init(environment: AppEnvironment, session: SessionManager, arguments: [String] = ProcessInfo.processInfo.arguments) {
         let repository = environment.makeBankRepository(session: session)
         let payments = environment.makePaymentRepository(session: session)
         self.repository = repository
@@ -28,6 +33,11 @@ struct ContentView: View {
         _dashboardViewModel = State(initialValue: DashboardViewModel(repository: repository))
         _paymentsViewModel = State(initialValue: PaymentsViewModel(repository: payments))
         _cardsViewModel = State(initialValue: CardsViewModel(repository: environment.makeCardRepository(session: session)))
+        let profile = environment.makeProfileRepository(session: session)
+        self.profile = profile
+        _profileViewModel = State(initialValue: ProfileViewModel(repository: profile, security: session, biometrics: environment.biometrics))
+        // UI tests skip the system permission alert.
+        asksForPush = !arguments.contains("-DisablePushPrompt")
     }
 
     var body: some View {
@@ -42,7 +52,10 @@ struct ContentView: View {
                         flow = .bills(nil, BillTarget(cardID: card.id, cardName: "\(card.productName) · \(card.last4)"))
                     }
                 case .payments: PaymentsView(viewModel: paymentsViewModel) { flow = $0 }
-                case .profile: ProfileView()
+                case .profile:
+                    ProfileView(viewModel: profileViewModel, path: $profilePath) {
+                        InboxViewModel(repository: profile) { profileViewModel.setUnread($0) }
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -59,12 +72,33 @@ struct ContentView: View {
         .fullScreenCover(item: $flow) { flow in
             paymentFlow(flow)
         }
+        .task {
+            await profileViewModel.load()
+            if asksForPush { await push.requestAuthorization() }
+        }
+        .task(id: push.token) {
+            // NOTI-01: tell the bank where to push; retried on the next launch if it fails.
+            if let token = push.token { try? await profile.registerPushToken(token) }
+        }
+        .onChange(of: push.arrivals) {
+            Task {
+                await profileViewModel.refreshUnread()
+                await dashboardViewModel.load()
+            }
+        }
+    }
+
+    /// The bell on the home screen opens the inbox in the profile tab.
+    private func openInbox() {
+        profilePath = [.inbox]
+        selectedTab = .profile
     }
 
     private var isAtRoot: Bool {
         switch selectedTab {
         case .home: homePath.isEmpty
         case .cards: cardPath.isEmpty
+        case .profile: profilePath.isEmpty
         default: true
         }
     }
@@ -78,7 +112,9 @@ struct ContentView: View {
                     homePath.append(.history)
                 },
                 onSelectTransaction: { homePath.append(.transaction($0.id)) },
-                onQuickAction: start
+                onQuickAction: start,
+                unreadCount: profileViewModel.unreadCount,
+                onOpenInbox: openInbox
             )
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: HomeRoute.self) { route in
@@ -154,6 +190,7 @@ struct ContentView: View {
             await paymentsViewModel.load()
             await cardsViewModel.load()
             await historyViewModel?.reload()
+            await profileViewModel.refreshUnread()
         }
     }
 }

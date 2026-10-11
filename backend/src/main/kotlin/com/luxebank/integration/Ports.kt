@@ -112,3 +112,13 @@ interface CardProcessor {
     /** Permanently blocks a lost or stolen card. */
     fun block(tokenRef: String)
 }
+
+/** Push delivery to the customer's phone (APNs in production, spec 7.0). */
+interface PushNotifier {
+    fun send(
+        pushToken: String,
+        title: String,
+        body: String,
+        category: String,
+    )
+}

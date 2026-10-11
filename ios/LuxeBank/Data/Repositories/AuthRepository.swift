@@ -9,6 +9,9 @@ protocol AuthRepository {
     func challenge(deviceID: UUID) async throws -> String
     func login(deviceID: UUID, challenge: String, signature: Data, method: LoginMethod, pin: String?) async throws -> AuthSession
     func enableBiometric(publicKey: Data, accessToken: String) async throws
+    func disableBiometric(accessToken: String) async throws
+    /// PROF-02: needs the current PIN; PIN_INVALID / PIN_LOCKED as at login.
+    func changePin(currentPin: String, newPin: String, accessToken: String) async throws
     func refresh(refreshToken: String) async throws -> AuthSession
     func profile(accessToken: String) async throws -> CustomerProfile
     func logout(accessToken: String) async throws
@@ -62,6 +65,16 @@ final class RemoteAuthRepository: AuthRepository {
     func enableBiometric(publicKey: Data, accessToken: String) async throws {
         try await client.sendWithoutResponse(
             method: "PUT", path: "auth/biometric", body: ["biometricPublicKey": publicKey.base64EncodedString()], accessToken: accessToken
+        )
+    }
+
+    func disableBiometric(accessToken: String) async throws {
+        try await client.sendWithoutResponse(method: "DELETE", path: "auth/biometric", accessToken: accessToken)
+    }
+
+    func changePin(currentPin: String, newPin: String, accessToken: String) async throws {
+        try await client.sendWithoutResponse(
+            method: "PUT", path: "auth/pin", body: ["currentPin": currentPin, "newPin": newPin], accessToken: accessToken
         )
     }
 
