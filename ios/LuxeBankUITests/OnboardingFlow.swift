@@ -59,9 +59,25 @@ struct OnboardingFlow {
         return XCTWaiter.wait(for: [focused], timeout: timeout) == .completed
     }
 
+    /// Taps the digits. Where the screen shows PIN dots, each tap is confirmed by the dots' progress and repeated
+    /// if the keypad dropped it (slow CI runners); the last digit submits, so it is not checked.
     func enter(_ digits: String) {
-        for digit in digits {
-            app.buttons["pinpad.\(digit)"].tap()
+        let dots = app.otherElements["pin.dots"]
+        for (index, digit) in digits.enumerated() {
+            let key = app.buttons["pinpad.\(digit)"]
+            key.tap()
+            guard index < digits.count - 1, dots.exists else { continue }
+            if !dots.waitForLabel("\(index + 1) of 6", timeout: 3) {
+                key.tap()
+                XCTAssertTrue(dots.waitForLabel("\(index + 1) of 6", timeout: 3), "PIN digit \(index + 1) was not entered")
+            }
         }
+    }
+}
+
+private extension XCUIElement {
+    func waitForLabel(_ prefix: String, timeout: TimeInterval) -> Bool {
+        let predicate = NSPredicate(format: "label BEGINSWITH %@", prefix)
+        return XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: self)], timeout: timeout) == .completed
     }
 }
