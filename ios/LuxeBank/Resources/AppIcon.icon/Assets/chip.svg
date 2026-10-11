@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="c" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E1116"/>
+      <stop offset="1" stop-color="#3A404C"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(18 26) rotate(-6 512 512)">
+    <!-- EMV chip -->
+    <rect x="282" y="400" width="118" height="88" rx="22" fill="url(#c)"/>
+    <!-- LuxeBank "L" monogram, bottom-right where card marks sit -->
+    <path d="M636 470 h40 v116 h88 v40 h-128 z" fill="url(#c)"/>
+  </g>
+</svg>

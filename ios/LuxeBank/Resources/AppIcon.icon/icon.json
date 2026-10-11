@@ -1,0 +1,49 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "srgb:0.13725,0.16863,0.23137,1.00000",
+      "srgb:0.05490,0.06667,0.08627,1.00000"
+    ],
+    "orientation" : {
+      "start" : { "x" : 0.5, "y" : 0 },
+      "stop" : { "x" : 0.5, "y" : 1 }
+    }
+  },
+  "groups" : [
+    {
+      "name" : "Chip",
+      "layers" : [
+        { "name" : "chip", "image-name" : "chip.svg", "glass" : true }
+      ],
+      "shadow" : { "kind" : "neutral", "opacity" : 0.4 },
+      "translucency" : { "enabled" : false, "value" : 0.5 }
+    },
+    {
+      "name" : "Front card",
+      "layers" : [
+        { "name" : "card-front", "image-name" : "card-front.svg", "glass" : true }
+      ],
+      "shadow" : { "kind" : "neutral", "opacity" : 0.6 },
+      "translucency" : { "enabled" : true, "value" : 0.25 }
+    },
+    {
+      "name" : "Back card",
+      "layers" : [
+        { "name" : "card-back", "image-name" : "card-back.svg", "glass" : true }
+      ],
+      "shadow" : { "kind" : "neutral", "opacity" : 0.4 },
+      "translucency" : { "enabled" : true, "value" : 0.5 }
+    },
+    {
+      "name" : "Glow",
+      "layers" : [
+        { "name" : "glow", "image-name" : "glow.svg", "glass" : false }
+      ],
+      "shadow" : { "kind" : "none", "opacity" : 0.5 },
+      "translucency" : { "enabled" : false, "value" : 0.5 }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}
