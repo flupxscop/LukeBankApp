@@ -33,6 +33,7 @@ struct LuxeTabBar: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(tab.title))
+                .accessibilityIdentifier("tab.\(tab.rawValue)")
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }

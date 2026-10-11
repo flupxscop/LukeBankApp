@@ -1,5 +1,6 @@
 package com.luxebank.ledger
 
+import com.luxebank.auth.TestDeviceKey
 import com.luxebank.auth.TokenService
 import com.luxebank.common.security.SecretHasher
 import com.luxebank.devices.Device
@@ -26,12 +27,18 @@ class BankFixture(
 ) {
     data class Customer(
         val userId: UUID,
+        val deviceId: UUID,
         val accessToken: String,
         val primary: UUID,
         val savings: UUID,
+        val deviceKey: TestDeviceKey,
+        val biometricKey: TestDeviceKey,
     )
 
-    fun customer(withAccounts: Boolean = true): Customer {
+    fun customer(
+        withAccounts: Boolean = true,
+        lastName: String = "ใจงาม",
+    ): Customer {
         val user =
             users.save(
                 User(
@@ -40,15 +47,28 @@ class BankFixture(
                     phone = "0812344521",
                     firstNameTh = "นกน้อย",
                     firstNameEn = "Noknoi",
+                    lastNameTh = lastName,
+                    lastNameEn = "Jaingam",
                     tier = "GOLD",
                 ),
             )
-        val device = devices.save(Device(userId = user.id, deviceName = "Test", publicKey = ByteArray(65), pinHash = "unused"))
+        val deviceKey = TestDeviceKey()
+        val biometricKey = TestDeviceKey()
+        val device =
+            devices.save(
+                Device(
+                    userId = user.id,
+                    deviceName = "Test",
+                    publicKey = deviceKey.x963,
+                    biometricPublicKey = biometricKey.x963,
+                    pinHash = hasher.hashSecret(PIN),
+                ),
+            )
         val token = tokens.issue(user.id, device.id).accessToken
-        if (!withAccounts) return Customer(user.id, token, UUID.randomUUID(), UUID.randomUUID())
+        if (!withAccounts) return Customer(user.id, device.id, token, UUID.randomUUID(), UUID.randomUUID(), deviceKey, biometricKey)
         val primary = account(user.id, "current", "บัญชีหลัก", primary = true)
         val savings = account(user.id, "savings", "ออมทรัพย์", primary = false)
-        return Customer(user.id, token, primary, savings)
+        return Customer(user.id, device.id, token, primary, savings, deviceKey, biometricKey)
     }
 
     fun account(
@@ -67,6 +87,14 @@ class BankFixture(
         )
         return id
     }
+
+    fun accountNumber(account: UUID): String =
+        checkNotNull(
+            jdbc.queryForObject("SELECT account_number FROM accounts WHERE id = :id", mapOf("id" to account), String::class.java),
+        )
+
+    fun balance(account: UUID): Long =
+        jdbc.queryForObject("SELECT balance_satang FROM accounts WHERE id = :id", mapOf("id" to account), Long::class.java) ?: 0
 
     fun deposit(
         account: UUID,
@@ -130,6 +158,10 @@ class BankFixture(
             ),
             at,
         )
+
+    companion object {
+        const val PIN = "482193"
+    }
 
     private fun digits(count: Int) = (1..count).joinToString("") { Random.nextInt(10).toString() }
 }

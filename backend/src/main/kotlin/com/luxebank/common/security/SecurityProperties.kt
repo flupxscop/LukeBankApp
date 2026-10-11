@@ -31,5 +31,7 @@ data class SecurityProperties(
         val maxPinAttempts: Int = 5,
         val challengeTtl: Duration = Duration.ofMinutes(2),
         val authRequestsPerMinute: Int = 20,
+        /** Name inquiries per customer per minute; slows down recipient enumeration (API6). */
+        val paymentInquiriesPerMinute: Int = 30,
     )
 }

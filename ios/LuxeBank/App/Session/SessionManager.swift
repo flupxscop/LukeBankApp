@@ -194,6 +194,11 @@ final class SessionManager {
         }
     }
 
+    /// A payment confirmation hit the PIN lockout; the server already revoked this device.
+    func deviceLocked() {
+        resetDevice(.pinLocked)
+    }
+
     // MARK: Sign out
 
     func logout() async {

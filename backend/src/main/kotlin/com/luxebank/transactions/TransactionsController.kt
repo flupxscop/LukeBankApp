@@ -78,6 +78,8 @@ data class TransactionDetailResponse(
     val referenceNo: String,
     val status: String,
     val account: TransactionAccount,
+    /** A transfer or bill this customer paid; `GET /transactions/{id}/slip` returns it. */
+    val hasSlip: Boolean,
 )
 
 data class UpdateTransactionRequest(
@@ -172,6 +174,7 @@ class TransactionsController(
             referenceNo = row.referenceNo,
             status = row.status,
             account = TransactionAccount(row.transaction.accountId, row.accountName, "•••• " + row.accountNumber.takeLast(MASK_VISIBLE)),
+            hasSlip = row.hasSlip,
         )
 
     private fun invalid(): Nothing = throw ApiException(ErrorCode.VALIDATION_FAILED, "Request is invalid")

@@ -43,6 +43,8 @@ class LedgerServiceTest(
         assertThat(fixture.transactionIds(customer.primary)).hasSize(2)
         assertThat(fixture.transactionIds(customer.savings)).hasSize(1)
         assertThat(ledger.unreconciledAccounts()).isEmpty()
+        // The clearing account keeps no snapshot, so external payments never queue on its row.
+        assertThat(balance(InternalAccounts.CLEARING)).isZero()
     }
 
     @Test

@@ -4,12 +4,13 @@ import com.luxebank.integration.OtpCodeGenerator
 import com.luxebank.integration.OtpSender
 import com.luxebank.integration.StubAdapter
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 /** Logs instead of sending SMS. Never logs the code itself (spec 13.1 A09). */
 @Component
-@Profile("!prod")
+@ConditionalOnProperty(prefix = "luxebank.integrations", name = ["otp"], havingValue = "stub", matchIfMissing = true)
 class StubOtpSender :
     OtpSender,
     StubAdapter {

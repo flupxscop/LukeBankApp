@@ -4,9 +4,12 @@ import UniformTypeIdentifiers
 /// S18 — transaction detail with editable category and memo (TXN-04, TXN-05).
 struct TransactionDetailView: View {
     @State var viewModel: TransactionDetailViewModel
+    var loadSlip: ((UUID) async throws -> PaymentSlip)?
     @State private var isEditingMemo = false
     @State private var memoDraft = ""
     @State private var copied = false
+    @State private var slip: PaymentSlip?
+    @State private var slipFailed = false
 
     var body: some View {
         ScrollView {
@@ -87,6 +90,32 @@ struct TransactionDetailView: View {
                 Text("detail.saveFailed")
                     .font(BankFont.caption(13))
                     .foregroundStyle(BankTheme.negative)
+            }
+
+            slipButton(detail)
+        }
+        .sheet(item: $slip) { slip in
+            NavigationStack {
+                SlipView(slip: slip, showsSuccess: false) { self.slip = nil }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func slipButton(_ detail: TransactionDetail) -> some View {
+        if detail.hasSlip, let loadSlip {
+            Button {
+                Task {
+                    slipFailed = false
+                    do { slip = try await loadSlip(detail.transaction.id) } catch { slipFailed = true }
+                }
+            } label: {
+                Label("detail.viewSlip", systemImage: "doc.text.image")
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .accessibilityIdentifier("detail.viewSlip")
+            if slipFailed {
+                InlineError(message: "error.generic")
             }
         }
     }

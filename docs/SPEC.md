@@ -2,7 +2,7 @@
 
 | รายการ | รายละเอียด |
 |---|---|
-| เวอร์ชันเอกสาร | 0.4 (Draft) |
+| เวอร์ชันเอกสาร | 0.5 (Draft) |
 | วันที่ | 2026-10-11 |
 | ขอบเขต | iOS App (SwiftUI) + Backend API (Spring Boot / Kotlin) |
 | สถานะ | ข้อตกลงหลักยืนยันแล้ว ดูหัวข้อ [12. Decision Log](#12-decision-log) |
@@ -508,7 +508,7 @@ Loading (skeleton), Content, Empty, Error (มีปุ่มลองใหม�
 | **M4 Cards** | Backend: cards (stub processor) · App: S15–S16 | จัดการบัตรได้ครบ |
 | **M5 Profile & Notifications** | S19–S20, APNs, การตั้งค่าการแจ้งเตือน | ฟีเจอร์ครบตาม scope |
 | **M6 Hardening** | Security review, pen test, accessibility audit, performance, UAT | พร้อม release บน stub/staging |
-| **M7 Go-live** | เสียบ production adapter (SMS, ITMX, bill, card), เลือก cloud, audit และขออนุญาตจากหน่วยงานกำกับ | ใช้งานจริง (ขึ้นกับสัญญาและใบอนุญาต) |
+| **M7 Go-live** (ไม่อยู่ในขอบเขตตาม D26 — ทางเลือกในอนาคต ดู integration-guide) | เสียบ production adapter (SMS, ITMX, bill, card), เลือก cloud, audit และขออนุญาตจากหน่วยงานกำกับ | ใช้งานจริง (ขึ้นกับสัญญาและใบอนุญาต) |
 
 ### Definition of Done (ต่อฟีเจอร์)
 - ผ่าน acceptance criteria ตาม Requirement ID
@@ -541,6 +541,15 @@ Loading (skeleton), Content, Empty, Error (มีปุ่มลองใหม�
 | D14 | Dev toolchain | JDK 21 (Homebrew `openjdk@21`), Docker ผ่าน Colima, Gradle wrapper |
 | D16 | Ledger | จำนวนเงินใน `postings` และ `transactions` เป็น **สตางค์แบบมีเครื่องหมาย** (+ เข้า, − ออก) แทนคอลัมน์ `direction` · DB บังคับเองว่าแต่ละ entry รวมได้ 0 (constraint trigger ตอน commit), posting แก้หรือลบไม่ได้, และยอดลูกค้าติดลบไม่ได้ · เงินที่เข้าหรือออกจากธนาคารผ่านบัญชีภายใน `INT-CLEARING` |
 | D17 | งบประมาณ | งบรายเดือนแบ่งเป็น 2 กลุ่มตามดีไซน์หน้าแรก: **ไลฟ์สไตล์** (อาหาร, ช้อปปิ้ง, ที่พัก, บิล, อื่น ๆ) และ **ท่องเที่ยว** (เดินทาง, ท่องเที่ยว) · โอนเงิน, ลงทุน, รายรับ และเงินคืนไม่นับเป็นการใช้จ่าย |
+| D18 | ยืนยันการจ่ายเงิน | inquiry เก็บจำนวนเงินและผู้รับไว้ฝั่ง server 5 นาทีพร้อม challenge ใช้ครั้งเดียว · แอปลงลายเซ็น challenge ด้วย device key + PIN หรือ key ที่ล็อกด้วย Face ID (≥ ฿50,000 รับเฉพาะ Face ID) · ตรวจ PIN ใน transaction แยก จึงนับครั้งที่ผิดและล็อกได้แม้การจ่ายเงินจะ rollback · `Idempotency-Key` ซ้ำได้สลิปเดิม |
+| D19 | วงเงินและค่าธรรมเนียม | วงเงินต่อวันนับเฉพาะการโอนให้ผู้อื่น (ไม่นับโอนระหว่างบัญชีตัวเองและจ่ายบิล) · ค่าธรรมเนียมเป็น ฿0 จนกว่าจะได้ข้อสรุปข้อ 1 ในคำถามที่ยังเปิด |
+| D20 | ผู้รับและบิลที่บันทึก | payee เก็บเลขบัญชีเต็มไว้ฝั่ง server เท่านั้น แอปเห็นแบบ mask และโอนซ้ำด้วย `payeeId` · ชื่อผู้รับแสดงแบบ mask (เช่น "นาย สมชาย ใจ**") · stub ใช้เลขที่ลงท้าย 0000 = ไม่พบ และ 9999 = ธนาคารปลายทางปฏิเสธ |
+| D21 | สลิป | QR บนสลิปใช้รูปแบบ mini QR ตรวจสอบสลิปของธนาคารไทย (tag 00/51/91 + CRC) โดยใช้รหัสธนาคารผู้ส่งชั่วคราว `099` จนกว่าจะได้รหัสสมาชิก ITMX |
+| D22 | ข้อมูลในแอป Release | build Release ต้องตั้ง `LUXEBANK_API_BASE_URL` (HTTPS) และ `LUXEBANK_API_PINS` (SPKI pin อย่างน้อย 2 ตัวรวม backup) มิฉะนั้นแอปไม่ยอมเปิด (fail fast แบบเดียวกับ profile `prod` ฝั่ง backend) · mock repository และ `-LuxeBankAPI` ใช้ได้เฉพาะ Debug |
+| D23 | บัญชีภายใน | บัญชี internal (เช่น `INT-CLEARING`) ไม่เก็บ balance snapshot และไม่ถูกล็อก ยอดคำนวณจาก postings · การกระทบยอดรายวันตรวจเฉพาะบัญชีลูกค้า เพื่อไม่ให้ทุกการจ่ายเงินออกนอกธนาคารต้องต่อคิวที่แถวเดียว |
+| D24 | ยอดจ่ายบิลและ QR | บิลทั่วไปต้องจ่ายเท่ายอดค้างพอดี · บัตรเครดิตและประกันจ่ายบางส่วนได้แต่ไม่เกินยอดค้าง · เติมเงินกำหนดยอดเอง · QR แบบ dynamic ที่มียอดเงินจะล็อกยอดในแอป |
+| D25 | Transaction และ connection | audit log เขียนใน transaction เดียวกับผู้เรียก (ไม่เปิด connection ที่สองระหว่างถือ connection แรก) · ขั้นยืนยันการจ่ายเงินแยกส่วนตรวจสิทธิ์และ audit ออกนอก transaction ที่ย้ายเงิน |
+| D26 | ขอบเขตโครงการ | สร้างเป็น **ระบบจำลอง** ไม่ใช่แอปธนาคารจริง (ตัดสินใจ 2026-10-11) · ระบบภายนอกทั้งหมดใช้ stub adapter เลือกได้ทีละระบบผ่าน `luxebank.integrations.*` · แกนกลาง (ledger, วงเงิน, idempotency, ลายเซ็นอุปกรณ์, audit) ทำเหมือนของจริง · งานที่จำเป็นเฉพาะระบบจริง (timeout, reversal, hosting, pin, M7) บันทึกเป็นจุดต่อขยายใน [integration-guide.md](integration-guide.md) ไม่ใช่งานค้าง |
 | D15 | Typography | ใช้ฟอนต์ระบบ **Thonburi** ทั้งแอป (ไทยและอังกฤษ) ไม่ต้อง bundle ฟอนต์เพิ่ม · ฟอนต์มีแค่น้ำหนัก Light/Regular/Bold |
 
 ### คำถามที่ยังเปิด (ไม่ block การเริ่มพัฒนา)

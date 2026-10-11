@@ -4,7 +4,6 @@ import com.luxebank.common.tracing.TraceIdFilter
 import org.slf4j.MDC
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -33,11 +32,19 @@ enum class AuditAction {
     LOGGED_OUT,
     TRANSACTION_UPDATED,
     LEDGER_RECONCILIATION_FAILED,
+    PAYMENT_SUCCEEDED,
+    PAYMENT_FAILED,
+    PAYMENT_AUTH_FAILED,
+    PAYEE_DELETED,
 }
 
 /**
  * Append-only, hash-chained audit trail (spec 7.2, 13.1 A09, 13.2 Integrity).
- * Runs in its own transaction so failed attempts are recorded even when the caller rolls back.
+ *
+ * Joins the caller's transaction instead of opening a second connection: a nested REQUIRES_NEW needs two
+ * pooled connections per request and starves the pool under load. Failed attempts still persist because
+ * callers commit on business errors (`noRollbackFor = ApiException`) or record them outside the transaction
+ * that rolls back (payments). The chain lock is held until the caller commits, which keeps rows in order.
  * Never put secrets or full identifiers in [metadata].
  */
 @Service
@@ -45,7 +52,7 @@ class AuditService(
     private val jdbc: JdbcTemplate,
     private val objectMapper: ObjectMapper,
 ) {
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     fun record(
         action: AuditAction,
         actorId: UUID? = null,

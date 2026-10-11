@@ -24,6 +24,10 @@ class User(
     val firstNameTh: String,
     @Column(name = "first_name_en", nullable = false)
     val firstNameEn: String,
+    @Column(name = "last_name_th", nullable = false)
+    val lastNameTh: String = "",
+    @Column(name = "last_name_en", nullable = false)
+    val lastNameEn: String = "",
     @Column(nullable = false)
     val tier: String,
     @Column(name = "failed_password_attempts", nullable = false)

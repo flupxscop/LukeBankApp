@@ -102,6 +102,7 @@ final class MockBankRepository: DashboardRepository, TransactionRepository {
     private let now: () -> Date
     private let calendar: Calendar
     private var store: [Transaction]
+    private var slipIDs: Set<UUID> = []
 
     init(shouldFail: Bool = false, now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
         self.shouldFail = shouldFail
@@ -139,6 +140,12 @@ final class MockBankRepository: DashboardRepository, TransactionRepository {
         return TransactionPage(items: page, nextCursor: next, totals: totals)
     }
 
+    /// A payment made through `MockPaymentRepository`; newest first, with a slip.
+    func record(_ transaction: Transaction) {
+        store.insert(transaction, at: 0)
+        slipIDs.insert(transaction.id)
+    }
+
     func transaction(id: UUID) async throws -> TransactionDetail {
         if shouldFail { throw RepositoryError.unavailable }
         guard let item = store.first(where: { $0.id == id }) else {
@@ -150,7 +157,8 @@ final class MockBankRepository: DashboardRepository, TransactionRepository {
             referenceNo: "LX261010" + suffix,
             isPosted: true,
             accountName: MockBankData.primaryAccount().name,
-            accountMaskedNumber: MockBankData.primaryAccount().maskedNumber
+            accountMaskedNumber: MockBankData.primaryAccount().maskedNumber,
+            hasSlip: slipIDs.contains(id)
         )
     }
 

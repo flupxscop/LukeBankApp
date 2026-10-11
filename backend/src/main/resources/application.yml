@@ -52,6 +52,15 @@ logging:
     level: "%5p [traceId=%X{traceId:-}]"
 
 luxebank:
+  # Which adapter serves each external system (spec 7.0, D26). `stub` = the simulator in integration/stub.
+  # To go live with one system: implement its port in integration/<provider>, annotate it with
+  # @ConditionalOnProperty(prefix = "luxebank.integrations", name = ["<key>"], havingValue = "<provider>")
+  # and set the key here. The `prod` profile refuses to start while any stub is active.
+  integrations:
+    otp: stub
+    interbank: stub
+    promptpay: stub
+    bills: stub
   security:
     pepper: ${LUXEBANK_PEPPER}
     identity-key: ${LUXEBANK_IDENTITY_KEY}

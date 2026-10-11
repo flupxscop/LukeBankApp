@@ -338,6 +338,287 @@ paths:
         "400":
           $ref: "#/components/responses/Error"
 
+  /banks:
+    get:
+      summary: Banks reachable for other-bank transfers
+      operationId: listBanks
+      responses:
+        "200":
+          description: Banks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code: { type: string, examples: [KBANK] }
+                    name: { type: string }
+                    monogram: { type: string }
+
+  /transfers/limits:
+    get:
+      summary: Daily transfer limit and what is left today (TRF-08)
+      operationId: getTransferLimits
+      parameters:
+        - { name: accountId, in: query, schema: { type: string, format: uuid }, description: Defaults to the primary account }
+      responses:
+        "200":
+          description: Limits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dailyLimit: { $ref: "#/components/schemas/Money" }
+                  usedToday: { $ref: "#/components/schemas/Money" }
+                  remaining: { $ref: "#/components/schemas/Money" }
+
+  /transfers/inquiry:
+    post:
+      summary: Check the recipient's name and price the transfer (TRF-01…06)
+      description: |
+        Fixes amount and recipient for 5 minutes and returns a single-use challenge.
+        Rate limited per customer to stop recipient enumeration (RATE_LIMITED).
+        Errors: VALIDATION_FAILED, RECIPIENT_NOT_FOUND, INSUFFICIENT_FUNDS, DAILY_LIMIT_EXCEEDED, NOT_FOUND (account not yours).
+      operationId: createTransferInquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fromAccountId, recipient, amount]
+              properties:
+                fromAccountId: { type: string, format: uuid }
+                recipient: { $ref: "#/components/schemas/Recipient" }
+                amount: { type: string, pattern: "^\\d{1,10}(\\.\\d{1,2})?$", examples: ["75000", "1500.50"] }
+                memo: { type: string, maxLength: 100 }
+      responses:
+        "200":
+          description: Priced inquiry
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentInquiry" }
+        "400": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+
+  /transfers:
+    post:
+      summary: Confirm a transfer inquiry (TRF-07, TRF-09, TRF-14)
+      description: |
+        The device signs the inquiry `challenge` (DER ECDSA P-256, base64): with the device key plus `pin`, or with
+        the Face ID key (`method: BIOMETRIC`). From 50,000 baht only BIOMETRIC is accepted (STEP_UP_REQUIRED).
+        Repeating the same Idempotency-Key returns the original slip; reusing it for another inquiry, or confirming
+        an inquiry twice, returns DUPLICATE_REQUEST. Other errors: PIN_INVALID (remainingAttempts), PIN_LOCKED,
+        SIGNATURE_INVALID, INQUIRY_EXPIRED, DAILY_LIMIT_EXCEEDED, SERVICE_UNAVAILABLE (nothing was deducted).
+      operationId: confirmTransfer
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConfirmPayment" }
+      responses:
+        "200":
+          description: Slip
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentSlip" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "410": { $ref: "#/components/responses/Error" }
+
+  /transactions/{id}/slip:
+    get:
+      summary: Slip of a transfer or bill the customer paid (TRF-10)
+      operationId: getSlip
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Slip
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentSlip" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /payees:
+    get:
+      summary: Favourites first, then recent recipients (TRF-11)
+      description: Names and numbers are masked; pay a payee with `recipient.type = payee`.
+      operationId: listPayees
+      responses:
+        "200":
+          description: Payees
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Payee" }
+
+  /payees/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      summary: Set favourite and nickname
+      operationId: updatePayee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [favorite]
+              properties:
+                favorite: { type: boolean }
+                nickname: { type: string, maxLength: 40 }
+      responses:
+        "200":
+          description: Payee
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Payee" }
+        "404": { $ref: "#/components/responses/Error" }
+    delete:
+      summary: Remove a payee
+      operationId: deletePayee
+      responses:
+        "204": { description: Removed }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /billers:
+    get:
+      summary: Biller catalogue (BILL-01)
+      operationId: listBillers
+      parameters:
+        - { name: category, in: query, schema: { type: string, enum: [electricity, water, internet, mobile, credit_card, insurance, ewallet] } }
+      responses:
+        "200":
+          description: Billers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Biller" }
+
+  /bills/inquiry:
+    post:
+      summary: Look up a bill and price the payment (BILL-02, BILL-04)
+      description: |
+        Pass a saved bill, or a biller with ref1/ref2. `amount` is required for top-ups. For other bills it defaults
+        to the amount due; billers with `partialPayment` accept less than is due, all others only the exact amount.
+      operationId: createBillInquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fromAccountId]
+              properties:
+                fromAccountId: { type: string, format: uuid }
+                billerCode: { type: string }
+                ref1: { type: string, pattern: "^[A-Za-z0-9]{1,32}$" }
+                ref2: { type: string, pattern: "^[A-Za-z0-9]{0,32}$" }
+                savedBillId: { type: string, format: uuid }
+                amount: { type: string }
+                memo: { type: string, maxLength: 100 }
+      responses:
+        "200":
+          description: Priced inquiry with `bill` details
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentInquiry" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /bills/payments:
+    post:
+      summary: Confirm a bill inquiry (BILL-05); same rules as POST /transfers
+      operationId: payBill
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConfirmPayment" }
+      responses:
+        "200":
+          description: Slip
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentSlip" }
+
+  /bills/saved:
+    get:
+      summary: Saved bills with what is due this month (BILL-03)
+      operationId: listSavedBills
+      responses:
+        "200":
+          description: Saved bills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    biller: { $ref: "#/components/schemas/Biller" }
+                    ref1: { type: string, description: Masked, e.g. x6789 }
+                    nickname: { type: [string, "null"] }
+                    amountDue: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
+                    dueDate: { type: [string, "null"], format: date }
+                    paid: { type: boolean }
+
+  /bills/saved/{id}:
+    delete:
+      summary: Remove a saved bill
+      operationId: deleteSavedBill
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Removed }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /qr/parse:
+    post:
+      summary: Read a Thai QR (EMVCo) payload for PromptPay or bill payment (TRF-12, BILL-02)
+      description: The CRC must match and the currency must be baht; anything else is QR_INVALID.
+      operationId: parseQr
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [payload]
+              properties:
+                payload: { type: string, maxLength: 512 }
+      responses:
+        "200":
+          description: What to pay
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, enum: [promptpay, bill] }
+                  proxy: { type: [string, "null"] }
+                  billerCode: { type: [string, "null"] }
+                  billerName: { type: [string, "null"] }
+                  ref1: { type: [string, "null"] }
+                  ref2: { type: [string, "null"] }
+                  amount: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
+                  merchantName: { type: [string, "null"] }
+                  amountLocked: { type: boolean, description: "Dynamic QR (point of initiation 12) with an amount: the payer cannot change it" }
+        "400": { $ref: "#/components/responses/Error" }
+
   /dashboard:
     get:
       summary: Home screen summary
@@ -368,6 +649,12 @@ components:
       bearerFormat: JWT
 
   parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: A new random value per confirmation, reused on retries (TRF-14)
+      schema: { type: string, pattern: "^[A-Za-z0-9-]{16,64}$" }
     AcceptLanguage:
       name: Accept-Language
       in: header
@@ -484,6 +771,7 @@ components:
         transaction: { $ref: "#/components/schemas/Transaction" }
         referenceNo: { type: string, examples: ["LX261010K7M2Q9XA4C"] }
         status: { type: string, enum: [pending, posted, failed, reversed] }
+        hasSlip: { type: boolean, description: "GET /transactions/{id}/slip returns it" }
         account:
           type: object
           properties:
@@ -515,6 +803,102 @@ components:
         kind: { type: string, enum: [lifestyle, travel] }
         spent: { $ref: "#/components/schemas/Money" }
         budget: { $ref: "#/components/schemas/Money", description: "0.00 when no budget is set" }
+
+    Recipient:
+      type: object
+      required: [type]
+      description: own → accountId · internal → accountNumber · other_bank → bankCode + accountNumber · promptpay → proxy · payee → payeeId
+      properties:
+        type: { type: string, enum: [own, internal, other_bank, promptpay, payee] }
+        accountId: { type: string, format: uuid }
+        bankCode: { type: string }
+        accountNumber: { type: string, examples: ["123-4-56789-0"] }
+        proxy: { type: string, description: Mobile number, national ID or e-wallet ID }
+        payeeId: { type: string, format: uuid }
+
+    Party:
+      type: object
+      properties:
+        name: { type: string, description: Masked for other people, e.g. "นาย สมชาย ใจ**" }
+        bankCode: { type: [string, "null"] }
+        bankName: { type: [string, "null"] }
+        account: { type: [string, "null"], examples: [x6789] }
+
+    BillInfo:
+      type: [object, "null"]
+      properties:
+        billerCode: { type: string }
+        billerName: { type: string }
+        ref1: { type: string }
+        ref2: { type: [string, "null"] }
+        customerName: { type: string }
+        dueDate: { type: [string, "null"], format: date }
+
+    PaymentInquiry:
+      type: object
+      properties:
+        inquiryId: { type: string, format: uuid }
+        challenge: { type: string, description: Sign this to confirm; single use }
+        expiresAt: { type: string, format: date-time }
+        recipientType: { type: string, enum: [own, internal, other_bank, promptpay, bill] }
+        amount: { $ref: "#/components/schemas/Money" }
+        fee: { $ref: "#/components/schemas/Money" }
+        memo: { type: [string, "null"] }
+        from: { $ref: "#/components/schemas/Party" }
+        to: { $ref: "#/components/schemas/Party" }
+        requiresBiometric: { type: boolean, description: true from 50,000 baht (TRF-09) }
+        bill: { $ref: "#/components/schemas/BillInfo" }
+
+    ConfirmPayment:
+      type: object
+      required: [inquiryId, method, signature]
+      properties:
+        inquiryId: { type: string, format: uuid }
+        method: { type: string, enum: [PIN, BIOMETRIC] }
+        signature: { type: string, description: base64 DER ECDSA over the challenge }
+        pin: { type: string, description: Required with method PIN }
+        saveAsFavorite: { type: boolean, default: false }
+        saveBill: { type: boolean, default: false }
+
+    PaymentSlip:
+      type: object
+      properties:
+        transactionId: { type: string, format: uuid }
+        referenceNo: { type: string }
+        recipientType: { type: string }
+        occurredAt: { type: string, format: date-time }
+        amount: { $ref: "#/components/schemas/Money" }
+        fee: { $ref: "#/components/schemas/Money" }
+        memo: { type: [string, "null"] }
+        from: { $ref: "#/components/schemas/Party" }
+        to: { $ref: "#/components/schemas/Party" }
+        slipQr: { type: string, description: Thai slip-verification mini QR (tags 00, 51, 91 CRC) }
+        bill: { $ref: "#/components/schemas/BillInfo" }
+
+    Payee:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [internal, other_bank, promptpay] }
+        name: { type: string }
+        nickname: { type: [string, "null"] }
+        bankCode: { type: [string, "null"] }
+        bankName: { type: [string, "null"] }
+        account: { type: string }
+        favorite: { type: boolean }
+        lastUsedAt: { type: string, format: date-time }
+
+    Biller:
+      type: object
+      properties:
+        code: { type: string }
+        name: { type: string }
+        category: { type: string }
+        ref1Label: { type: string }
+        ref2Label: { type: [string, "null"] }
+        topUp: { type: boolean }
+        monogram: { type: string }
+        partialPayment: { type: boolean, description: "Cards and insurance: any amount up to what is due. Others: exactly the amount due." }
 
     Dashboard:
       type: object

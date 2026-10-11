@@ -57,12 +57,76 @@ class LocalDemoData(
                     phone = "0812344521",
                     firstNameTh = "นกน้อย",
                     firstNameEn = "Noknoi",
+                    lastNameTh = "ใจงาม",
+                    lastNameEn = "Jaingam",
                     tier = "GOLD",
                 ),
             )
-        if (accounts.listForUser(user.id).isNotEmpty()) return
-        tx.executeWithoutResult { seedLedger(user.id) }
-        log.info("Created local demo customer with a year of history")
+        jdbc.update(
+            "UPDATE users SET last_name_th = 'ใจงาม', last_name_en = 'Jaingam' WHERE id = :id AND last_name_th = ''",
+            mapOf("id" to user.id),
+        )
+        if (accounts.listForUser(user.id).isEmpty()) {
+            tx.executeWithoutResult { seedLedger(user.id) }
+            log.info("Created local demo customer with a year of history")
+        }
+        tx.executeWithoutResult { seedPayments(user.id) }
+    }
+
+    /** M3: a second LuxeBank customer to transfer to, favourite payees and saved bills. */
+    private fun seedPayments(userId: UUID) {
+        if (accounts.findActiveByNumber(FRIEND_ACCOUNT) == null) {
+            val friend =
+                users.saveAndFlush(
+                    User(
+                        citizenIdHash = hasher.identityHash("3101700123456"),
+                        passwordHash = hasher.hashSecret(UUID.randomUUID().toString()),
+                        phone = "0898765432",
+                        firstNameTh = "สมศรี",
+                        firstNameEn = "Somsri",
+                        lastNameTh = "มีสุข",
+                        lastNameEn = "Meesuk",
+                        tier = "SILVER",
+                    ),
+                )
+            createAccount(friend.id, "savings", "ออมทรัพย์", FRIEND_ACCOUNT, primary = true)
+        }
+        val payeeCount = jdbc.queryForObject("SELECT COUNT(*) FROM payees WHERE user_id = :user", mapOf("user" to userId), Long::class.java)
+        if ((payeeCount ?: 0L) > 0) return
+
+        data class DemoPayee(
+            val type: String,
+            val bank: String,
+            val account: String,
+            val name: String,
+            val nickname: String?,
+        )
+        listOf(
+            DemoPayee("internal", "LUXE", FRIEND_ACCOUNT, "สมศรี มีสุข", null),
+            DemoPayee("promptpay", "PP", "0898765432", "นาง วิไล ใจงาม", "แม่"),
+            DemoPayee("other_bank", "KBANK", "1234567890", "นาย สมชาย ใจดี", null),
+        ).forEachIndexed { index, payee ->
+            jdbc.update(
+                "INSERT INTO payees (id, user_id, type, bank_code, account_or_proxy, name, nickname, favorite, last_used_at) " +
+                    "VALUES (:id, :user, :type, :bank, :account, :name, :nickname, TRUE, now() - make_interval(days => :days))",
+                mapOf(
+                    "id" to UUID.randomUUID(),
+                    "user" to userId,
+                    "type" to payee.type,
+                    "bank" to payee.bank,
+                    "account" to payee.account,
+                    "name" to payee.name,
+                    "nickname" to payee.nickname,
+                    "days" to index,
+                ),
+            )
+        }
+        listOf("MEA" to "0123456789", "LXCARD" to "4111222233334444").forEach { (biller, ref) ->
+            jdbc.update(
+                "INSERT INTO saved_bills (id, user_id, biller_code, ref1, nickname) VALUES (:id, :user, :biller, :ref, 'บ้าน')",
+                mapOf("id" to UUID.randomUUID(), "user" to userId, "biller" to biller, "ref" to ref),
+            )
+        }
     }
 
     private fun seedLedger(userId: UUID) {
@@ -296,6 +360,7 @@ class LocalDemoData(
     private companion object {
         const val DEMO_CITIZEN_ID = "1234567890121"
         const val DEMO_PASSWORD = "LuxeDemo#2026"
+        const val FRIEND_ACCOUNT = "2223334445"
         const val HISTORY_DAYS = 365L
         const val SEED = 2026
         const val ROUND = 1_000L

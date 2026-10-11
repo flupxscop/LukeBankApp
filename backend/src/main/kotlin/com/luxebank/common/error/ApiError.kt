@@ -50,6 +50,13 @@ enum class ErrorCode(
     // Money (TRF-*, ledger)
     INSUFFICIENT_FUNDS(HttpStatus.UNPROCESSABLE_CONTENT),
     ACCOUNT_UNAVAILABLE(HttpStatus.CONFLICT),
+    DAILY_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT),
+    STEP_UP_REQUIRED(HttpStatus.FORBIDDEN),
+    RECIPIENT_NOT_FOUND(HttpStatus.NOT_FOUND),
+    BILL_NOT_FOUND(HttpStatus.NOT_FOUND),
+    INQUIRY_EXPIRED(HttpStatus.GONE),
+    DUPLICATE_REQUEST(HttpStatus.CONFLICT),
+    QR_INVALID(HttpStatus.BAD_REQUEST),
 }
 
 /** Business error that maps to the shared error body. */

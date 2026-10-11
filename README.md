@@ -5,6 +5,7 @@ Premium iOS banking app (SwiftUI) with a Spring Boot + Kotlin backend.
 - Specification: [docs/SPEC.md](docs/SPEC.md)
 - Threat model: [docs/security/threat-model.md](docs/security/threat-model.md)
 - API contract: [api/openapi.yaml](api/openapi.yaml)
+- Simulation scope and how to connect real systems later: [docs/integration-guide.md](docs/integration-guide.md)
 
 ## Screenshots
 <p align="center">
@@ -34,9 +35,19 @@ xcodegen generate
 open LuxeBank.xcodeproj
 ```
 
+Release builds need the backend and its certificate pins as build settings, or the app refuses to start:
+`LUXEBANK_API_BASE_URL=https://…` and `LUXEBANK_API_PINS=<base64 SPKI SHA-256>,<backup pin>`. Mock data and `-LuxeBankAPI` exist in Debug builds only.
+
 Run the `LuxeBank` scheme on an iPhone simulator. By default the app uses mock repositories. To use the local backend, add the launch argument `-LuxeBankAPI http://127.0.0.1:8080` (Debug builds allow `localhost` only).
 
 Demo customer (synthetic, local profile only): national ID `1-2345-67890-12-1`, password `LuxeDemo#2026`, OTP `000000`. On first start the `local` profile also seeds two accounts, budgets, a savings goal and a year of deterministic ledger history for the home and history screens.
+
+Payments (M3) run against stub gateways in every profile except `prod` (which refuses to start with stubs):
+
+- Other-bank and PromptPay numbers ending in `0000` do not exist; numbers ending in `9999` are rejected by the receiving bank (nothing is deducted).
+- A second LuxeBank customer, account `222-3-33444-5`, receives internal transfers; the demo customer also has three favourite payees and saved bills (MEA `0123456789`, LuxeBank card).
+- Bill references of all zeros are unknown; top-ups (AIS, TrueMove H, TrueMoney) take any amount.
+- Amounts from ฿50,000 need Face ID, so test those on a device or a simulator with enrolled Face ID.
 
 Tests (unit + UI onboarding flow):
 

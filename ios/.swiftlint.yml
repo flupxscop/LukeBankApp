@@ -28,7 +28,7 @@ file_length:
   warning: 600
 
 identifier_name:
-  excluded: [id, x, y]
+  excluded: [id, x, y, to]
 
 custom_rules:
   no_print:
