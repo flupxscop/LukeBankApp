@@ -77,6 +77,31 @@ class LocalDemoData(
         }
         tx.executeWithoutResult { seedPayments(user.id) }
         tx.executeWithoutResult { seedCards(user.id) }
+        tx.executeWithoutResult { seedProfile(user.id) }
+    }
+
+    /** M5: the synthetic relationship manager (V7) and a welcome message in the inbox. */
+    private fun seedProfile(userId: UUID) {
+        jdbc.update(
+            "UPDATE users SET relationship_manager_id = :rm WHERE id = :id AND relationship_manager_id IS NULL",
+            mapOf("rm" to DEMO_RM, "id" to userId),
+        )
+        val inbox =
+            jdbc.queryForObject(
+                "SELECT COUNT(*) FROM notifications WHERE user_id = :user",
+                mapOf("user" to userId),
+                Long::class.java,
+            )
+        if (inbox == 0L) {
+            jdbc.update(
+                """
+                INSERT INTO notifications (id, user_id, kind, title, body, created_at) VALUES
+                    (:welcome, :user, 'marketing', 'สิทธิพิเศษสมาชิก GOLD', 'รับเครดิตเงินคืน 5% ที่ร้านอาหารพันธมิตรถึงสิ้นเดือนนี้', now() - interval '2 days'),
+                    (:device, :user, 'security', 'เข้าสู่ระบบจากเครื่องใหม่', 'หากไม่ใช่คุณ โปรดติดต่อธนาคารทันที', now() - interval '5 days')
+                """,
+                mapOf("welcome" to UUID.randomUUID(), "device" to UUID.randomUUID(), "user" to userId),
+            )
+        }
     }
 
     /** M4: a debit card on the main account and a credit card with its own credit account and recent purchases. */
@@ -439,6 +464,7 @@ class LocalDemoData(
     private companion object {
         const val DEMO_CITIZEN_ID = "1234567890121"
         const val DEMO_PASSWORD = "LuxeDemo#2026"
+        val DEMO_RM: UUID = UUID.fromString("00000000-0000-0000-0000-0000000000a1")
         const val FRIEND_ACCOUNT = "2223334445"
         const val HISTORY_DAYS = 365L
         const val SEED = 2026

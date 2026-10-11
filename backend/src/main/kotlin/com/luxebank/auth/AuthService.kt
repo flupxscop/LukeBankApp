@@ -9,7 +9,10 @@ import com.luxebank.common.security.SecurityProperties
 import com.luxebank.devices.Device
 import com.luxebank.devices.DeviceKeys
 import com.luxebank.devices.DeviceRepository
+import com.luxebank.notifications.SecurityEvent
+import com.luxebank.notifications.SecurityEventType
 import com.luxebank.users.UserRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -39,6 +42,7 @@ class AuthService(
     private val hasher: SecretHasher,
     private val audit: AuditService,
     private val properties: SecurityProperties,
+    private val events: ApplicationEventPublisher,
 ) {
     private val limits get() = properties.limits
 
@@ -113,6 +117,7 @@ class AuthService(
                 Device(userId = userId, deviceName = deviceName, publicKey = publicKey, pinHash = hasher.hashSecret(pin)),
             )
         audit.record(AuditAction.DEVICE_REGISTERED, actorId = userId, deviceId = device.id)
+        events.publishEvent(SecurityEvent(userId, SecurityEventType.NEW_DEVICE))
         return tokens.issue(userId, device.id)
     }
 
@@ -166,12 +171,14 @@ class AuthService(
         val device = activeDevice(current.deviceId)
         device.biometricPublicKey = decodeKey(biometricPublicKey)
         audit.record(AuditAction.BIOMETRIC_ENABLED, actorId = current.userId, deviceId = device.id)
+        events.publishEvent(SecurityEvent(current.userId, SecurityEventType.BIOMETRIC_ENABLED))
     }
 
     fun disableBiometric(current: CurrentDevice) {
         val device = activeDevice(current.deviceId)
         device.biometricPublicKey = null
         audit.record(AuditAction.BIOMETRIC_DISABLED, actorId = current.userId, deviceId = device.id)
+        events.publishEvent(SecurityEvent(current.userId, SecurityEventType.BIOMETRIC_DISABLED))
     }
 
     fun changePin(
@@ -185,6 +192,7 @@ class AuthService(
         device.pinHash = hasher.hashSecret(newPin)
         device.failedPinAttempts = 0
         audit.record(AuditAction.PIN_CHANGED, actorId = current.userId, deviceId = device.id)
+        events.publishEvent(SecurityEvent(current.userId, SecurityEventType.PIN_CHANGED))
     }
 
     private fun checkPin(

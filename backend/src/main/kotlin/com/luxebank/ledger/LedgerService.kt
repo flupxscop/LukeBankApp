@@ -2,6 +2,8 @@ package com.luxebank.ledger
 
 import com.luxebank.common.error.ApiException
 import com.luxebank.common.error.ErrorCode
+import com.luxebank.notifications.TransactionPostedEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,6 +39,7 @@ data class Line(
 @Service
 class LedgerService(
     private val jdbc: NamedParameterJdbcTemplate,
+    private val events: ApplicationEventPublisher,
 ) {
     private val random = SecureRandom()
 
@@ -165,6 +168,8 @@ class LedgerService(
                 "card" to details.cardId,
             ),
         )
+        // Delivered after commit (NotificationService), so a rolled-back entry never notifies anyone.
+        events.publishEvent(TransactionPostedEvent(line.accountId, details.merchant, line.amountSatang, occurredAt))
     }
 
     /** e.g. LX261010K7M2Q9XA4C — date plus 10 random characters, unique by constraint. */
