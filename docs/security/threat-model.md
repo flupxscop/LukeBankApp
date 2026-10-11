@@ -4,7 +4,7 @@ STRIDE review of the system as designed in [SPEC.md](../SPEC.md). Update this fi
 
 | Field | Value |
 |---|---|
-| Version | 0.5 (M3 review fixes) |
+| Version | 0.6 (M4 cards) |
 | Date | 2026-10-11 |
 | Scope | iOS app, `/api/v1` backend, PostgreSQL, Redis, external adapters (stubs) |
 
@@ -44,6 +44,8 @@ STRIDE review of the system as designed in [SPEC.md](../SPEC.md). Update this fi
 | I1 | Another customer's accounts read via ID guessing (BOLA) | API | UUID IDs, every account/transaction query scoped by owner and answering 404, BOLA tests for list, detail and update (13.1 A01/API1) | **Done (M2, tested)** |
 | I2 | Sensitive data leaks through logs, errors or screenshots | All | No stack traces, shared error body, log masking, App Switcher overlay, screenshot block on card reveal | **Partly done** (error body, App Switcher overlay, OTP never logged); card reveal in M4 |
 | I5 | Release build ships mock data or an unpinned connection | iOS | Release refuses to start without an HTTPS base URL and SPKI pins; mocks and `-LuxeBankAPI` compile into Debug only (D22) | **Done (M3 review, tested)** |
+| I6 | Card number or CVV leaked from storage, cache or screen | Cards | No PAN/CVV in LuxeBank's DB (processor token only); reveal needs a Face ID step-up and is audited; `Cache-Control: no-store`; app hides after 30 s, when backgrounded or screen-captured, and marks the fields privacy-sensitive | **Done (M4, tested)** — encrypting the reveal to a device key is a documented extension (D27) |
+| S4 | Someone with an unlocked phone blocks or reveals a card | Cards | Report lost needs the PIN, reveal needs Face ID, both on a single-use device challenge; shared PIN lockout | **Done (M4, tested)** |
 | I3 | Man-in-the-middle on hostile Wi-Fi | Network | ATS with no exceptions (Debug allows localhost only) + public-key pinning (13.1 M5) | **Built (M1); pins added when the production host exists** |
 | I4 | Data extracted from a lost or jailbroken phone | Device | Keychain `WhenUnlockedThisDeviceOnly`, Secure Enclave keys, jailbreak signal (AUTH-11) | **Done (M1)**; jailbreak warning UI in M5 |
 | D1 | Brute force or flooding of login/OTP/transfer endpoints | API | Redis rate limit per IP + endpoint, per-customer limit on payment name inquiries (enumeration, API6), password/OTP/PIN lockouts shared by login and payments, request size limits, WAF (13.1 API4) | **Done for auth (M1) and payments (M3)**; WAF at deploy |

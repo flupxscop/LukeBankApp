@@ -11,6 +11,9 @@ struct BillTarget: Equatable, Hashable {
     var amount: Decimal?
     /// From a dynamic QR: the biller fixed the amount.
     var amountLocked = false
+    /// Paying one of the customer's own LuxeBank credit cards.
+    var cardID: UUID?
+    var cardName: String?
 }
 
 /// S13 + S14 — choose a biller or saved bill, check the reference, pay (BILL-01…05).
@@ -114,11 +117,13 @@ final class BillPayViewModel {
     }
 
     var isTopUp: Bool { biller?.topUp ?? false }
+    var isCardPayment: Bool { target.cardID != nil }
     /// Top-ups take any amount; cards and insurance accept less than is due; a QR may fix the amount.
-    var showsAmount: Bool { isTopUp || (biller?.partialPayment ?? false) || target.amountLocked }
+    var showsAmount: Bool { isTopUp || isCardPayment || (biller?.partialPayment ?? false) || target.amountLocked }
     var isAmountLocked: Bool { target.amountLocked && target.amount != nil }
-    var isSaved: Bool { target.saved != nil }
-    var title: String { target.saved?.displayName ?? biller?.name ?? "" }
+    /// Saved bills and card payments need no reference typed in.
+    var isSaved: Bool { target.saved != nil || isCardPayment }
+    var title: String { target.cardName ?? target.saved?.displayName ?? biller?.name ?? "" }
 
     var amount: Decimal? {
         let value = PaymentRules.amount(amountText)
@@ -160,7 +165,8 @@ final class BillPayViewModel {
                 ref1: isSaved ? nil : ref1,
                 ref2: isSaved ? nil : ref2.nilIfBlank,
                 savedBillID: target.saved?.id,
-                amount: amount
+                amount: amount,
+                cardID: target.cardID
             )
             let priced = try await repository.billInquiry(from: fromAccount.id, request: request)
             inquiry = priced

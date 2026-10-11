@@ -118,6 +118,17 @@ final class MockPaymentRepository: PaymentRepository {
 
     func billInquiry(from accountID: UUID, request: BillRequest) async throws -> PaymentInquiry {
         try await pause()
+        if request.cardID != nil {
+            let owed: Decimal = 86_420
+            let amount = request.amount ?? owed
+            guard amount > 0, amount <= owed else { throw server("VALIDATION_FAILED") }
+            let card = Self.billerList.first { $0.code == "LXCARD" }
+            let bill = BillInfo(
+                billerCode: "LXCARD", billerName: card?.name ?? "LuxeBank", ref1: "8821", ref2: nil, customerName: "นกน้อย ใจ**", dueDate: nil
+            )
+            let party = PaymentParty(name: card?.name ?? "", bankCode: nil, bankName: nil, account: "x8821")
+            return store(kind: .bill, amount: amount, memo: nil, to: party, bill: bill)
+        }
         let isSaved = request.savedBillID == savedBillID
         let code = isSaved ? "MEA" : (request.billerCode ?? "")
         let ref1 = isSaved ? "0123456789" : (request.ref1 ?? "")
