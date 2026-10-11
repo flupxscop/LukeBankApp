@@ -6,6 +6,8 @@ import Foundation
 @MainActor
 final class MockPaymentRepository: PaymentRepository {
     var shouldFail = false
+    /// Mirrors the server's AUTH-11 rule for a phone that reports itself compromised.
+    var deviceCompromised = false
     var delay: Duration = .milliseconds(250)
     private let bank: MockBankRepository?
     private var inquiries: [UUID: PaymentInquiry] = [:]
@@ -221,6 +223,7 @@ final class MockPaymentRepository: PaymentRepository {
 
     private func confirm(inquiryID: UUID, authorization: PaymentAuthorization, idempotencyKey: String) async throws -> PaymentSlip {
         try await pause()
+        if deviceCompromised { throw server("DEVICE_COMPROMISED") }
         if let previous = slipsByKey[idempotencyKey] { return previous }
         guard let inquiry = inquiries[inquiryID] else { throw server("DUPLICATE_REQUEST") }
         guard inquiry.expiresAt > Date() else { throw server("INQUIRY_EXPIRED") }

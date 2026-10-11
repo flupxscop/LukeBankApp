@@ -224,6 +224,40 @@ extension SessionManagerTests {
 
 extension APIClientTests {
     @MainActor
+    struct DeviceIntegrityHeaderTests {
+        @Test func aCompromisedPhoneSaysSoOnEveryRequest() async throws {
+            _ = StubProtocol.client(status: 200, body: "{}")
+            let configuration = URLSessionConfiguration.ephemeral
+            configuration.protocolClasses = [StubProtocol.self]
+            let client = APIClient(
+                baseURL: URL(string: "https://api.test/api/v1") ?? URL(fileURLWithPath: "/"),
+                session: URLSession(configuration: configuration),
+                deviceID: { nil },
+                isDeviceCompromised: true
+            )
+            try await client.sendWithoutResponse(method: "POST", path: "transfers")
+            #expect(StubProtocol.lastRequest?.value(forHTTPHeaderField: "X-Device-Integrity") == "compromised")
+
+            _ = try await StubProtocol.client(status: 200, body: "{}").sendWithoutResponse(method: "GET", path: "accounts")
+            #expect(StubProtocol.lastRequest?.value(forHTTPHeaderField: "X-Device-Integrity") == nil)
+        }
+
+        @Test func theMockRefusesPaymentsAndRevealsLikeTheServer() async throws {
+            let cards = MockCardRepository()
+            cards.delay = .zero
+            cards.deviceCompromised = true
+            let auth = PaymentAuthorization(method: .biometric, signature: Data(), pin: nil)
+            do {
+                _ = try await cards.reveal(cardID: MockCardRepository.debitID, challenge: "c", authorization: auth)
+                Issue.record("Reveal should be refused")
+            } catch let error as APIError {
+                #expect(error.code == "DEVICE_COMPROMISED")
+                #expect(PaymentErrors.message(for: error) == "error.deviceCompromised")
+            }
+        }
+    }
+
+    @MainActor
     struct RemoteProfileRepositoryTests {
         private let tokens = StubTokens()
 

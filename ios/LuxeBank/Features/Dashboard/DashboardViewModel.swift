@@ -35,6 +35,8 @@ final class DashboardViewModel {
     }
 
     private(set) var state: State = .loading
+    /// When the shown data was loaded; shown next to the offline badge (NFR-08).
+    private(set) var updatedAt: Date?
     var selectedRange: HistoryRange = .month
     private(set) var isBalanceHidden = false
     /// The last shortcut tapped; ContentView opens the matching payment flow.
@@ -59,7 +61,10 @@ final class DashboardViewModel {
     func load() async {
         do {
             state = .loaded(try await repository.fetchDashboard())
+            updatedAt = now()
         } catch {
+            // Keep what is on screen (e.g. offline); fail only when there is nothing to show.
+            if case .loaded = state { return }
             state = .failed
         }
     }

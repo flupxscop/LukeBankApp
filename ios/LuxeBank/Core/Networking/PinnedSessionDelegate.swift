@@ -28,11 +28,13 @@ final class PinnedSessionDelegate: NSObject, URLSessionDelegate {
             return
         }
 
-        let matches = chain.contains { certificate in
-            guard let key = SecCertificateCopyKey(certificate), let hash = Self.spkiHash(of: key) else { return false }
-            return pins.contains(hash)
-        }
+        let matches = Self.matches(keys: chain.compactMap(SecCertificateCopyKey), pins: pins)
         completionHandler(matches ? .useCredential : .cancelAuthenticationChallenge, matches ? URLCredential(trust: trust) : nil)
+    }
+
+    /// True when any key in the server's chain has one of the pinned hashes; otherwise the connection is cancelled.
+    static func matches(keys: [SecKey], pins: Set<String>) -> Bool {
+        keys.contains { key in spkiHash(of: key).map(pins.contains) ?? false }
     }
 
     /// SHA-256 over the DER SubjectPublicKeyInfo, base64 encoded (same format as HPKP / OkHttp pins).

@@ -50,6 +50,10 @@ springdoc:
 logging:
   pattern:
     level: "%5p [traceId=%X{traceId:-}]"
+    # NFR-05, spec 13.4.4: account, card and ID numbers (10-19 digits) and JWTs are masked in every message and
+    # stack trace, including exception messages we do not control (e.g. SQL errors). %nopex stops logback from
+    # appending the unmasked exception a second time.
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} ${LOG_LEVEL_PATTERN} %logger{40} : %replace(%m%n%wEx){'\\d{10,19}|eyJ[\\w-]+\\.[\\w-]+\\.[\\w-]+', '[masked]'}%nopex"
 
 luxebank:
   # Which adapter serves each external system (spec 7.0, D26). `stub` = the simulator in integration/stub.

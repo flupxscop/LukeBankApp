@@ -69,7 +69,7 @@ struct SettingsChevron: View {
             }
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color(hex: 0xA3A9B5))
+                .foregroundStyle(BankTheme.fractionText)
                 .accessibilityHidden(true)
         }
     }

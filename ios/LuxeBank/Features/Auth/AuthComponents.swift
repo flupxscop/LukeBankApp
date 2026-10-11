@@ -52,6 +52,7 @@ struct PinDots: View {
         .cardShadow(radius: 16, y: 6, opacity: 0.07)
         .accessibilityElement()
         .accessibilityLabel(Text("pin.progress \(filled)"))
+        .accessibilityIdentifier("pin.dots")
     }
 }
 

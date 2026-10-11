@@ -20,6 +20,7 @@ struct LuxeTabBar: View {
                             Text(tab.title)
                                 .font(BankFont.caption(13, bold: true))
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.6)
                         }
                     }
                     .foregroundStyle(isSelected ? Color.white : BankTheme.secondaryText)

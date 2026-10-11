@@ -1,6 +1,7 @@
 package com.luxebank.config
 
 import com.luxebank.auth.CurrentDeviceResolver
+import com.luxebank.auth.DeviceIntegrityInterceptor
 import com.luxebank.common.security.AuthRateLimitInterceptor
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
@@ -11,9 +12,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class WebConfig(
     private val rateLimit: AuthRateLimitInterceptor,
     private val currentDevice: CurrentDeviceResolver,
+    private val integrity: DeviceIntegrityInterceptor,
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(rateLimit).addPathPatterns("/api/v1/auth/**")
+        registry.addInterceptor(integrity).addPathPatterns(DeviceIntegrityInterceptor.PROTECTED)
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {

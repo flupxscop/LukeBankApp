@@ -10,6 +10,8 @@ struct AppEnvironment {
     let secureStorage: SecureStorage
     let keyManager: DeviceKeyManaging
     let biometrics: BiometricAvailability
+    let integrity: DeviceIntegrityChecking
+    let network: NetworkMonitor
     /// Set when running against a backend; otherwise `mockBank` serves data.
     let apiClient: APIClient?
     let mockBank: MockBankRepository?
@@ -25,6 +27,7 @@ struct AppEnvironment {
             ["session.deviceId", "session.refreshToken", "customer.firstName", "key.device", "key.biometric"].forEach(storage.remove)
         }
         #endif
+        let integrity = SystemDeviceIntegrity(arguments: arguments)
         let auth: AuthRepository
         var apiClient: APIClient?
         switch AppConfiguration.current(arguments: arguments) {
@@ -32,7 +35,8 @@ struct AppEnvironment {
             let client = APIClient(
                 baseURL: base.appending(path: "api/v1"),
                 session: URLSession(configuration: .ephemeral, delegate: PinnedSessionDelegate(pins: pins), delegateQueue: nil),
-                deviceID: { storage.string(for: "session.deviceId").flatMap(UUID.init(uuidString:)) }
+                deviceID: { storage.string(for: "session.deviceId").flatMap(UUID.init(uuidString:)) },
+                isDeviceCompromised: integrity.isCompromised
             )
             auth = RemoteAuthRepository(client: client)
             apiClient = client
@@ -40,15 +44,21 @@ struct AppEnvironment {
             auth = MockAuthRepository()
         }
         let mockBank = apiClient == nil ? MockBankRepository() : nil
+        let mockPayments = apiClient == nil ? MockPaymentRepository(bank: mockBank) : nil
+        let mockCards = apiClient == nil ? MockCardRepository() : nil
+        mockPayments?.deviceCompromised = integrity.isCompromised
+        mockCards?.deviceCompromised = integrity.isCompromised
         return AppEnvironment(
             authRepository: auth,
             secureStorage: storage,
             keyManager: SecureEnclaveKeyManager(storage: storage),
             biometrics: SystemBiometrics(),
+            integrity: integrity,
+            network: NetworkMonitor(arguments: arguments),
             apiClient: apiClient,
             mockBank: mockBank,
-            mockPayments: apiClient == nil ? MockPaymentRepository(bank: mockBank) : nil,
-            mockCards: apiClient == nil ? MockCardRepository() : nil,
+            mockPayments: mockPayments,
+            mockCards: mockCards,
             mockProfile: apiClient == nil ? MockProfileRepository() : nil
         )
     }
@@ -61,6 +71,8 @@ struct AppEnvironment {
             secureStorage: storage,
             keyManager: SecureEnclaveKeyManager(storage: storage),
             biometrics: SystemBiometrics(),
+            integrity: SystemDeviceIntegrity(arguments: []),
+            network: NetworkMonitor(isOnline: true),
             apiClient: nil,
             mockBank: bank,
             mockPayments: MockPaymentRepository(bank: bank),

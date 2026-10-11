@@ -37,6 +37,23 @@ struct DashboardViewModelTests {
         #expect(viewModel.state == .failed)
     }
 
+    @Test func keepsTheLastDataWhenARefreshFails() async {
+        let now = date(hour: 9)
+        let repository = MockBankRepository(now: { now })
+        let viewModel = DashboardViewModel(repository: repository, now: { now }, calendar: calendar)
+        await viewModel.load()
+        #expect(viewModel.updatedAt == now)
+
+        repository.shouldFail = true
+        await viewModel.load()
+
+        guard case .loaded = viewModel.state else {
+            Issue.record("Offline refresh must keep the data on screen (NFR-08)")
+            return
+        }
+        #expect(viewModel.updatedAt == now)
+    }
+
     @Test func retryRecoversAfterFailure() async {
         let repository = MockDashboardRepository(shouldFail: true)
         let viewModel = DashboardViewModel(repository: repository, calendar: calendar)
