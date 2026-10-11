@@ -297,6 +297,36 @@ class PaymentFlowIntegrationTest(
     }
 
     @Test
+    fun `concurrent confirmations racing other postings on the same account all succeed`() {
+        // More payments than pooled connections, interleaved with ledger deposits into the payer's account:
+        // guards against connection-pool starvation and lock-order deadlocks.
+        val customer = funded()
+        val bodies =
+            (1..12).map {
+                confirmBody(customer, transferInquiry(customer, mapOf("type" to "promptpay", "proxy" to "0812345678"), "1"))
+            }
+        val pool =
+            java.util.concurrent.Executors
+                .newFixedThreadPool(24)
+        val confirms =
+            bodies.map { body ->
+                java.util.concurrent.Callable {
+                    confirm("/api/v1/transfers", customer, body, UUID.randomUUID().toString()).andReturn().response.status
+                }
+            }
+        val deposits =
+            (1..12).map {
+                java.util.concurrent.Callable { runCatching { fixture.deposit(customer.primary, 100) }.fold({ 200 }, { 500 }) }
+            }
+        val statuses = pool.invokeAll(confirms + deposits).map { it.get() }
+        pool.shutdown()
+
+        assertThat(statuses).containsOnly(200)
+        assertThat(fixture.balance(customer.primary)).isEqualTo(100_000_000 - 12 * 100 + 12 * 100)
+        assertThat(ledger.unreconciledAccounts()).isEmpty()
+    }
+
+    @Test
     fun `name inquiries are rate limited per customer`() {
         val customer = funded()
         repeat(30) { inquiryRequest(customer, mapOf("type" to "promptpay", "proxy" to "0812345678"), "1") }

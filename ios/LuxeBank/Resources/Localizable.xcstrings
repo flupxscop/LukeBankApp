@@ -3316,6 +3316,23 @@
         }
       }
     },
+    "slip.saveFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save. Allow LuxeBank to add photos in Settings."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกรูปไม่สำเร็จ อนุญาตให้ LuxeBank เพิ่มรูปได้ในการตั้งค่า"
+          }
+        }
+      }
+    },
     "slip.saved": {
       "extractionState": "manual",
       "localizations": {

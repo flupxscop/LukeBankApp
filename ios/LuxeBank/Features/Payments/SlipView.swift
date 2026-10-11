@@ -1,4 +1,5 @@
 import CoreImage.CIFilterBuiltins
+import Photos
 import SwiftUI
 
 /// S11 — success and the shareable slip with a verification QR (TRF-10).
@@ -8,6 +9,7 @@ struct SlipView: View {
     let onDone: () -> Void
     @State private var renderedSlip: UIImage?
     @State private var saved = false
+    @State private var saveFailed = false
 
     var body: some View {
         ScrollView {
@@ -31,6 +33,9 @@ struct SlipView: View {
                 }
                 SlipCard(slip: slip)
                 actions
+                if saveFailed {
+                    InlineError(message: "slip.saveFailed")
+                }
             }
             .padding(.horizontal, BankTheme.Spacing.screen)
             .padding(.vertical, 12)
@@ -50,8 +55,7 @@ struct SlipView: View {
         HStack(spacing: 10) {
             Button {
                 guard let renderedSlip else { return }
-                UIImageWriteToSavedPhotosAlbum(renderedSlip, nil, nil, nil)
-                saved = true
+                Task { await save(renderedSlip) }
             } label: {
                 Label(saved ? "slip.saved" : "slip.save", systemImage: saved ? "checkmark" : "arrow.down.to.line")
             }
@@ -68,6 +72,22 @@ struct SlipView: View {
                 }
                 .buttonStyle(SecondaryButtonStyle())
             }
+        }
+    }
+
+    /// Add-only Photos access; reports a refusal instead of claiming success.
+    private func save(_ image: UIImage) async {
+        saveFailed = false
+        let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+        guard status == .authorized || status == .limited else {
+            saveFailed = true
+            return
+        }
+        do {
+            try await PHPhotoLibrary.shared().performChanges { PHAssetChangeRequest.creationRequestForAsset(from: image) }
+            saved = true
+        } catch {
+            saveFailed = true
         }
     }
 

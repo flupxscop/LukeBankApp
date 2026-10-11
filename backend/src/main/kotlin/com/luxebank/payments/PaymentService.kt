@@ -1,6 +1,5 @@
 package com.luxebank.payments
 
-import com.luxebank.accounts.AccountQueries
 import com.luxebank.accounts.AccountRow
 import com.luxebank.audit.AuditAction
 import com.luxebank.audit.AuditService
@@ -8,16 +7,6 @@ import com.luxebank.auth.CurrentDevice
 import com.luxebank.common.error.ApiException
 import com.luxebank.common.error.ErrorCode
 import com.luxebank.common.security.SecretHasher
-import com.luxebank.integration.BillPaymentGateway
-import com.luxebank.integration.ExternalAccount
-import com.luxebank.integration.InterbankTransferGateway
-import com.luxebank.ledger.Category
-import com.luxebank.ledger.Channel
-import com.luxebank.ledger.EntryDetails
-import com.luxebank.ledger.InternalAccounts
-import com.luxebank.ledger.JournalType
-import com.luxebank.ledger.LedgerService
-import com.luxebank.ledger.Line
 import com.luxebank.ledger.Money
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -117,13 +106,9 @@ data class ConfirmCommand(
 @Service
 class PaymentService(
     private val store: PaymentStore,
-    private val accounts: AccountQueries,
-    private val ledger: LedgerService,
+    private val executor: PaymentExecutor,
     private val authorizer: PaymentAuthorizer,
-    private val interbank: InterbankTransferGateway,
-    private val bills: BillPaymentGateway,
     private val billers: BillerCatalog,
-    private val payees: PayeeStore,
     private val hasher: SecretHasher,
     private val audit: AuditService,
     private val clock: Clock,
@@ -136,7 +121,7 @@ class PaymentService(
     ): InquiryResponse {
         if (draft.amountSatang > draft.from.balanceSatang) throw ApiException(ErrorCode.INSUFFICIENT_FUNDS, "Insufficient funds")
         if (draft.kind == PaymentKind.TRANSFER && draft.recipientType != RecipientType.OWN) {
-            checkDailyLimit(draft.from, draft.amountSatang)
+            executor.checkDailyLimit(draft.from, draft.amountSatang)
         }
         val inquiry =
             Inquiry(
@@ -177,14 +162,16 @@ class PaymentService(
         )
     }
 
-    @Transactional
+    /**
+     * Deliberately not one transaction: the authorizer and the audit trail each need their own connection,
+     * and holding the payment's connection while waiting for another exhausts the pool under load.
+     * Only [PaymentExecutor.execute] moves money, in a single transaction.
+     */
     fun confirm(
         current: CurrentDevice,
         command: ConfirmCommand,
         english: Boolean,
     ): PaymentSlip {
-        val proof = command.proof
-        val options = command.options
         val idempotencyHash = hasher.tokenHash("${current.userId}:${command.idempotencyKey}")
         store.findByIdempotency(idempotencyHash)?.let { previous ->
             if (previous.inquiryId != command.inquiryId) throw duplicate()
@@ -192,18 +179,11 @@ class PaymentService(
         }
 
         val inquiry = pendingInquiry(current, command)
-        authorizer.authorize(current, inquiry.challenge, proof, inquiry.requiresBiometric)
+        authorizer.authorize(current, inquiry.challenge, command.proof, inquiry.requiresBiometric)
 
-        if (!store.consume(inquiry.id, Instant.now(clock))) throw duplicate()
-        store.lockAccount(inquiry.fromAccountId)
-        val from = accounts.requireOwned(current.userId, inquiry.fromAccountId)
-        if (inquiry.kind == PaymentKind.TRANSFER && inquiry.recipientType != RecipientType.OWN) {
-            checkDailyLimit(from, inquiry.amountSatang)
-        }
-
-        val entryId =
+        val transactionId =
             try {
-                post(inquiry, from, idempotencyHash, english)
+                executor.execute(inquiry, idempotencyHash, command.options, english)
             } catch (error: ApiException) {
                 audit.record(
                     AuditAction.PAYMENT_FAILED,
@@ -213,11 +193,6 @@ class PaymentService(
                 )
                 throw error
             }
-        val transactionId = store.payerTransaction(entryId, from.id)
-        store.insertPayment(current.userId, inquiry.id, idempotencyHash, entryId, transactionId)
-
-        if (inquiry.kind == PaymentKind.TRANSFER) payees.remember(inquiry, favorite = options.saveAsFavorite)
-        if (options.saveBill && inquiry.kind == PaymentKind.BILL) billers.save(current.userId, inquiry)
 
         audit.record(
             AuditAction.PAYMENT_SUCCEEDED,
@@ -227,7 +202,7 @@ class PaymentService(
                 "inquiryId" to inquiry.id.toString(),
                 "kind" to inquiry.recipientType.code,
                 "amountSatang" to inquiry.amountSatang,
-                "method" to proof.method.name,
+                "method" to command.proof.method.name,
             ),
         )
         return slip(current.userId, transactionId, english)
@@ -272,60 +247,6 @@ class PaymentService(
         )
     }
 
-    private fun post(
-        inquiry: Inquiry,
-        from: AccountRow,
-        idempotencyHash: String,
-        english: Boolean,
-    ): UUID {
-        val amount = inquiry.amountSatang
-        val shownName = if (inquiry.recipientType == RecipientType.OWN) inquiry.recipientName else Masking.name(inquiry.recipientName)
-        val channel = if (inquiry.recipientType == RecipientType.PROMPTPAY) Channel.PROMPTPAY else Channel.TRANSFER
-        val debit = Line(from.id, -amount, EntryDetails(shownName, Category.TRANSFER, channel, memo = inquiry.memo))
-
-        return when (inquiry.recipientType) {
-            RecipientType.OWN, RecipientType.INTERNAL -> {
-                val to = checkNotNull(inquiry.toAccountId)
-                val credit =
-                    if (inquiry.recipientType == RecipientType.OWN) {
-                        EntryDetails(from.name, Category.TRANSFER, Channel.TRANSFER, memo = inquiry.memo)
-                    } else {
-                        EntryDetails(
-                            Masking.name(payerName(inquiry.userId, english)),
-                            Category.INCOME,
-                            Channel.TRANSFER,
-                            memo = inquiry.memo,
-                        )
-                    }
-                ledger.post(JournalType.TRANSFER, listOf(debit, Line(to, amount, credit)), idempotencyKey = idempotencyHash)
-            }
-            RecipientType.OTHER_BANK, RecipientType.PROMPTPAY -> {
-                val entry =
-                    ledger.post(
-                        JournalType.TRANSFER,
-                        listOf(debit, Line(InternalAccounts.CLEARING, amount)),
-                        idempotencyKey = idempotencyHash,
-                    )
-                val target = ExternalAccount(checkNotNull(inquiry.bankCode), checkNotNull(inquiry.accountOrProxy), inquiry.recipientName)
-                // Inside the database transaction: a rejection rolls the debit back (production adds pending + reversal).
-                interbank.transfer(target, amount, entry.toString())
-                entry
-            }
-            RecipientType.BILL -> {
-                val biller = billers.require(checkNotNull(inquiry.billerCode))
-                val details = EntryDetails(biller.name(english), Category.BILLS, Channel.BILL, biller.monogram, inquiry.memo)
-                val entry =
-                    ledger.post(
-                        JournalType.BILL,
-                        listOf(Line(from.id, -amount, details), Line(InternalAccounts.CLEARING, amount)),
-                        idempotencyKey = idempotencyHash,
-                    )
-                bills.pay(biller.code, checkNotNull(inquiry.ref1), inquiry.ref2, amount, entry.toString())
-                entry
-            }
-        }
-    }
-
     private fun pendingInquiry(
         current: CurrentDevice,
         command: ConfirmCommand,
@@ -341,21 +262,6 @@ class PaymentService(
             throw ApiException(ErrorCode.INQUIRY_EXPIRED, "This confirmation expired, start again")
         }
         return inquiry
-    }
-
-    private fun payerName(
-        userId: UUID,
-        english: Boolean,
-    ): String = accounts.ownerName(userId, english)
-
-    private fun checkDailyLimit(
-        from: AccountRow,
-        amount: Long,
-    ) {
-        val used = store.transferredToday(from.id, LocalDate.now(clock))
-        if (used + amount > from.dailyTransferLimitSatang) {
-            throw ApiException(ErrorCode.DAILY_LIMIT_EXCEEDED, "This transfer is over today's limit")
-        }
     }
 
     private fun recipientParty(
