@@ -1,7 +1,10 @@
 package com.luxebank.config
 
 import com.luxebank.accounts.AccountQueries
+import com.luxebank.cards.CardStore
+import com.luxebank.cards.NewCard
 import com.luxebank.common.security.SecretHasher
+import com.luxebank.integration.CardProcessor
 import com.luxebank.ledger.BankTime
 import com.luxebank.ledger.Category
 import com.luxebank.ledger.Channel
@@ -44,6 +47,8 @@ class LocalDemoData(
     private val jdbc: NamedParameterJdbcTemplate,
     private val tx: TransactionTemplate,
     private val clock: Clock,
+    private val cards: CardStore,
+    private val processor: CardProcessor,
 ) : ApplicationRunner {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -71,6 +76,80 @@ class LocalDemoData(
             log.info("Created local demo customer with a year of history")
         }
         tx.executeWithoutResult { seedPayments(user.id) }
+        tx.executeWithoutResult { seedCards(user.id) }
+    }
+
+    /** M4: a debit card on the main account and a credit card with its own credit account and recent purchases. */
+    private fun seedCards(userId: UUID) {
+        if (cards.listForUser(userId).isNotEmpty()) return
+        val primary = accounts.requirePrimary(userId)
+        val debit = processor.issue(credit = false, productName = "LuxeBank Debit Platinum")
+        val debitId =
+            cards.insert(
+                NewCard(
+                    userId = userId,
+                    accountId = primary.id,
+                    credit = false,
+                    productName = "LuxeBank Debit Platinum",
+                    last4 = debit.last4,
+                    tokenRef = debit.tokenRef,
+                    expiryMonth = debit.expiryMonth,
+                    expiryYear = debit.expiryYear,
+                    dailyLimitSatang = 5_000_000,
+                    maxDailyLimitSatang = 20_000_000,
+                ),
+            )
+        // Earlier simulated card spending on the main account belongs to the debit card.
+        jdbc.update(
+            "UPDATE transactions SET card_id = :card WHERE account_id = :account AND channel = 'card' AND card_id IS NULL",
+            mapOf("card" to debitId, "account" to primary.id),
+        )
+
+        val creditAccount = UUID.randomUUID()
+        jdbc.update(
+            """
+            INSERT INTO accounts (id, user_id, type, name, account_number, is_primary, credit_limit_satang)
+            VALUES (:id, :user, 'credit', 'Titanium Reserve', :number, FALSE, 50000000)
+            """,
+            mapOf("id" to creditAccount, "user" to userId, "number" to "552133" + userId.toString().filter(Char::isDigit).take(10)),
+        )
+        val credit = processor.issue(credit = true, productName = "Titanium Reserve")
+        val creditId =
+            cards.insert(
+                NewCard(
+                    userId = userId,
+                    accountId = creditAccount,
+                    credit = true,
+                    productName = "Titanium Reserve",
+                    last4 = credit.last4,
+                    tokenRef = credit.tokenRef,
+                    expiryMonth = credit.expiryMonth,
+                    expiryYear = credit.expiryYear,
+                    dailyLimitSatang = 5_000_000,
+                    maxDailyLimitSatang = 20_000_000,
+                    rewardPoints = 12_800,
+                    travelInsurance = true,
+                ),
+            )
+        val today = LocalDate.now(clock)
+        listOf(
+            Triple("Sarnies Bangkok", Category.FOOD, 58_000L),
+            Triple("Central Chidlom", Category.SHOPPING, 2_450_000L),
+            Triple("Thai Airways", Category.TRAVEL, 3_890_000L),
+            Triple("Gourmet Market", Category.FOOD, 412_000L),
+            Triple("Agoda", Category.TRAVEL, 1_640_000L),
+            Triple("Apple Store", Category.SHOPPING, 192_000L),
+        ).forEachIndexed { index, (merchant, category, amount) ->
+            ledger.post(
+                JournalType.CARD,
+                listOf(
+                    Line(creditAccount, -amount, EntryDetails(merchant, category, Channel.CARD, cardId = creditId)),
+                    Line(InternalAccounts.CLEARING, amount),
+                ),
+                at(today.minusDays(index * 4L + 1), 12 + index, 15),
+            )
+        }
+        log.info("Created demo debit and credit cards")
     }
 
     /** M3: a second LuxeBank customer to transfer to, favourite payees and saved bills. */

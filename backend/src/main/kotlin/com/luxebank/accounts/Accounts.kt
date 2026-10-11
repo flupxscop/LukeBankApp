@@ -45,7 +45,10 @@ data class AccountResponse(
     }
 }
 
-/** Customer accounts. Every lookup is scoped to the owner, so other customers' IDs read as not found (13.1 A01). */
+/**
+ * Customer deposit accounts. Every lookup is scoped to the owner, so other customers' IDs read as not found (13.1 A01).
+ * Credit-card accounts are reached only through their card (`cards` package), never listed or transferred from.
+ */
 @Repository
 class AccountQueries(
     private val jdbc: NamedParameterJdbcTemplate,
@@ -67,7 +70,10 @@ class AccountQueries(
 
     fun listForUser(userId: UUID): List<AccountRow> =
         jdbc.query(
-            "SELECT * FROM accounts WHERE user_id = :user AND status <> 'closed' ORDER BY is_primary DESC, created_at, id",
+            """
+            SELECT * FROM accounts WHERE user_id = :user AND type <> 'credit' AND status <> 'closed'
+            ORDER BY is_primary DESC, created_at, id
+            """,
             mapOf("user" to userId),
             mapper,
         )
@@ -78,7 +84,7 @@ class AccountQueries(
     ): AccountRow? =
         jdbc
             .query(
-                "SELECT * FROM accounts WHERE id = :id AND user_id = :user AND status <> 'closed'",
+                "SELECT * FROM accounts WHERE id = :id AND user_id = :user AND type <> 'credit' AND status <> 'closed'",
                 mapOf("id" to accountId, "user" to userId),
                 mapper,
             ).firstOrNull()
@@ -92,7 +98,7 @@ class AccountQueries(
     fun findActiveByNumber(accountNumber: String): AccountRow? =
         jdbc
             .query(
-                "SELECT * FROM accounts WHERE account_number = :number AND user_id IS NOT NULL AND status = 'active'",
+                "SELECT * FROM accounts WHERE account_number = :number AND user_id IS NOT NULL AND type <> 'credit' AND status = 'active'",
                 mapOf("number" to accountNumber),
                 mapper,
             ).firstOrNull()

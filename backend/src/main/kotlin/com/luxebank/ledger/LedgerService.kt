@@ -19,6 +19,8 @@ data class EntryDetails(
     val channel: Channel,
     val monogram: String? = null,
     val memo: String? = null,
+    /** The card that made a purchase (CARD-09). */
+    val cardId: UUID? = null,
 )
 
 /** One side of a journal entry. Customer-account lines need [details]; internal accounts do not. */
@@ -59,7 +61,8 @@ class LedgerService(
             if (!account.internal) {
                 require(accountLines.all { it.details != null }) { "Customer postings need details" }
                 if (account.status != "active") throw ApiException(ErrorCode.ACCOUNT_UNAVAILABLE, "Account is not active")
-                if (account.balance + accountLines.sumOf { it.amountSatang } < 0) {
+                // Deposit accounts stop at zero; a credit card's account at minus its credit limit.
+                if (account.balance + accountLines.sumOf { it.amountSatang } < -account.creditLimit) {
                     throw ApiException(ErrorCode.INSUFFICIENT_FUNDS, "Insufficient funds")
                 }
             }
@@ -111,6 +114,7 @@ class LedgerService(
         val internal: Boolean,
         val status: String,
         val balance: Long,
+        val creditLimit: Long,
     )
 
     /**
@@ -120,9 +124,14 @@ class LedgerService(
     private fun lockAccounts(ids: List<UUID>): Map<UUID, LockedAccount> {
         val mapper = { rs: java.sql.ResultSet, _: Int ->
             rs.getObject("id", UUID::class.java) to
-                LockedAccount(rs.getBoolean("internal"), rs.getString("status"), rs.getLong("balance_satang"))
+                LockedAccount(
+                    rs.getBoolean("internal"),
+                    rs.getString("status"),
+                    rs.getLong("balance_satang"),
+                    rs.getLong("credit_limit_satang"),
+                )
         }
-        val columns = "SELECT id, user_id IS NULL AS internal, status, balance_satang FROM accounts WHERE id IN (:ids)"
+        val columns = "SELECT id, user_id IS NULL AS internal, status, balance_satang, credit_limit_satang FROM accounts WHERE id IN (:ids)"
         val rows =
             jdbc.query("$columns AND user_id IS NOT NULL ORDER BY id FOR UPDATE", mapOf("ids" to ids), mapper) +
                 jdbc.query("$columns AND user_id IS NULL", mapOf("ids" to ids), mapper)
@@ -138,8 +147,9 @@ class LedgerService(
     ) {
         jdbc.update(
             """
-            INSERT INTO transactions (id, account_id, journal_entry_id, merchant, monogram, category, channel, amount_satang, memo, occurred_at)
-            VALUES (:id, :account, :entry, :merchant, :monogram, :category, :channel, :amount, :memo, :at)
+            INSERT INTO transactions (id, account_id, journal_entry_id, merchant, monogram, category, channel, amount_satang, memo,
+                occurred_at, card_id)
+            VALUES (:id, :account, :entry, :merchant, :monogram, :category, :channel, :amount, :memo, :at, :card)
             """,
             mapOf(
                 "id" to UUID.randomUUID(),
@@ -152,6 +162,7 @@ class LedgerService(
                 "amount" to line.amountSatang,
                 "memo" to details.memo,
                 "at" to ts(occurredAt),
+                "card" to details.cardId,
             ),
         )
     }

@@ -27,6 +27,8 @@ struct BillRequest: Equatable {
     var ref2: String?
     var savedBillID: UUID?
     var amount: Decimal?
+    /// One of the customer's own LuxeBank credit cards; settles inside the bank.
+    var cardID: UUID?
 }
 
 final class RemotePaymentRepository: PaymentRepository {
@@ -102,7 +104,8 @@ final class RemotePaymentRepository: PaymentRepository {
             ref1: request.ref1,
             ref2: request.ref2?.nilIfBlank,
             savedBillId: request.savedBillID,
-            amount: request.amount.map(MoneyString.string)
+            amount: request.amount.map(MoneyString.string),
+            cardId: request.cardID
         )
         let dto: PaymentDTO.Inquiry = try await api.send(APIRequest(method: "POST", path: "bills/inquiry", body: body))
         return try dto.domain()
@@ -226,6 +229,7 @@ enum PaymentDTO {
         let ref2: String?
         let savedBillId: UUID?
         let amount: String?
+        let cardId: UUID?
     }
 
     struct ConfirmBody: Encodable {

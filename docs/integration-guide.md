@@ -12,6 +12,7 @@ This guide lists the seams and what replacing each one involves.
 | Other-bank transfers (ITMX) | Name lookup and transfer always succeed, except numbers ending `0000` (not found) and `9999` (rejected) | `integration/stub/PaymentStubs.kt` |
 | PromptPay directory | Any valid mobile / national ID / e-wallet resolves to a stub person | `integration/stub/PaymentStubs.kt` |
 | Bill payment aggregator | Stable amount due on the 25th per reference; all-zero references unknown | `integration/stub/PaymentStubs.kt` |
+| Card processor | Issues test cards; PAN/CVV derived from the token (Luhn-valid test BINs), never stored; rules and blocks are accepted | `integration/stub/StubCardProcessor.kt` |
 | Money outside LuxeBank | Posted to the internal `INT-CLEARING` account | `ledger/LedgerTypes.kt` (`InternalAccounts`) |
 | Customer data | Demo customer, accounts and a year of history in profile `local` | `config/LocalDemoData.kt` |
 | iOS data | `Mock*Repository` when no backend is configured (Debug only) | `ios/LuxeBank/Data/Mock` |
@@ -29,6 +30,7 @@ Each external system is a port (interface) in `backend/src/main/kotlin/com/luxeb
 | `InterbankTransferGateway` | `luxebank.integrations.interbank` | `payments/RecipientResolver`, `payments/PaymentExecutor` |
 | `PromptPayDirectory` | `luxebank.integrations.promptpay` | `payments/RecipientResolver` |
 | `BillPaymentGateway` | `luxebank.integrations.bills` | `payments/BillsController`, `payments/PaymentExecutor` |
+| `CardProcessor` | `luxebank.integrations.cards` | `cards/CardService`, `config/LocalDemoData` |
 
 Steps for, say, a real ITMX gateway:
 
@@ -53,6 +55,9 @@ These are deliberately not built in the simulation. The schema and code leave ro
   it `posted` or post a reversing entry. Postings are append-only, so a reversal is a new entry, never an edit.
 - **Store the signed confirmation** (challenge + signature) for disputes (threat model R1).
 - **Encrypted columns** for payee account numbers and references (SPEC 13.3).
+- **Card purchases** arrive from the processor's authorisation feed; post them through `LedgerService.post` with
+  `EntryDetails(cardId = …)` against the card's account (credit) or linked account (debit).
+- **Encrypting revealed card details to the device** (ECIES to a key-agreement key in the Secure Enclave).
 
 ## 3. Backend: make the bank side real
 

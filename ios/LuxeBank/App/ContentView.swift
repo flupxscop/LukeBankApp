@@ -9,9 +9,11 @@ enum HomeRoute: Hashable {
 struct ContentView: View {
     @State private var selectedTab: BankTab = .home
     @State private var homePath: [HomeRoute] = []
+    @State private var cardPath: [CardRoute] = []
     @State private var dashboardViewModel: DashboardViewModel
     @State private var historyViewModel: HistoryViewModel?
     @State private var paymentsViewModel: PaymentsViewModel
+    @State private var cardsViewModel: CardsViewModel
     @State private var flow: PaymentFlow?
     private let repository: BankRepository
     private let payments: PaymentRepository
@@ -25,6 +27,7 @@ struct ContentView: View {
         authorizer = DevicePaymentAuthorizer(keys: environment.keyManager, session: session)
         _dashboardViewModel = State(initialValue: DashboardViewModel(repository: repository))
         _paymentsViewModel = State(initialValue: PaymentsViewModel(repository: payments))
+        _cardsViewModel = State(initialValue: CardsViewModel(repository: environment.makeCardRepository(session: session)))
     }
 
     var body: some View {
@@ -34,23 +37,35 @@ struct ContentView: View {
             Group {
                 switch selectedTab {
                 case .home: home
-                case .cards: CardsView()
+                case .cards:
+                    CardsView(viewModel: cardsViewModel, path: $cardPath, authorizer: authorizer) { card in
+                        flow = .bills(nil, BillTarget(cardID: card.id, cardName: "\(card.productName) · \(card.last4)"))
+                    }
                 case .payments: PaymentsView(viewModel: paymentsViewModel) { flow = $0 }
                 case .profile: ProfileView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            if homePath.isEmpty {
+            // Only on the root screens: pushed screens use the whole height (their bottom actions sit there).
+            if isAtRoot {
                 LuxeTabBar(selectedTab: $selectedTab)
                     .padding(.horizontal, BankTheme.Spacing.screen)
                     .padding(.bottom, 8)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: homePath.isEmpty)
+        .animation(.easeInOut(duration: 0.2), value: isAtRoot)
         .fullScreenCover(item: $flow) { flow in
             paymentFlow(flow)
+        }
+    }
+
+    private var isAtRoot: Bool {
+        switch selectedTab {
+        case .home: homePath.isEmpty
+        case .cards: cardPath.isEmpty
+        default: true
         }
     }
 
@@ -137,6 +152,7 @@ struct ContentView: View {
         Task {
             await dashboardViewModel.load()
             await paymentsViewModel.load()
+            await cardsViewModel.load()
             await historyViewModel?.reload()
         }
     }

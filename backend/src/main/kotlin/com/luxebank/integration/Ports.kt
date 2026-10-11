@@ -70,3 +70,45 @@ interface BillPaymentGateway {
         reference: String,
     )
 }
+
+/** What the card processor returns when it issues a card; LuxeBank stores only these fields. */
+data class IssuedCard(
+    val tokenRef: String,
+    val last4: String,
+    val expiryMonth: Int,
+    val expiryYear: Int,
+)
+
+/** Full card details, fetched from the processor only for a step-up-verified reveal (CARD-07). Never stored. */
+data class CardSecrets(
+    val pan: String,
+    val cvv: String,
+)
+
+data class CardRules(
+    val active: Boolean,
+    val online: Boolean,
+    val overseas: Boolean,
+    val contactless: Boolean,
+    val atm: Boolean,
+    val dailyLimitSatang: Long,
+)
+
+/** Card processor (spec 7.0): issues cards, holds PAN/CVV and authorises purchases by the rules LuxeBank sets. */
+interface CardProcessor {
+    fun issue(
+        credit: Boolean,
+        productName: String,
+    ): IssuedCard
+
+    fun reveal(tokenRef: String): CardSecrets
+
+    /** Pushes freeze state, channels and daily limit; the processor declines purchases that break them. */
+    fun applyRules(
+        tokenRef: String,
+        rules: CardRules,
+    )
+
+    /** Permanently blocks a lost or stolen card. */
+    fun block(tokenRef: String)
+}

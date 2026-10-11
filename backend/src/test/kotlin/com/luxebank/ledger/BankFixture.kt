@@ -24,6 +24,8 @@ class BankFixture(
     private val hasher: SecretHasher,
     private val jdbc: NamedParameterJdbcTemplate,
     private val ledger: LedgerService,
+    private val cards: com.luxebank.cards.CardStore,
+    private val processor: com.luxebank.integration.CardProcessor,
 ) {
     data class Customer(
         val userId: UUID,
@@ -157,6 +159,62 @@ class BankFixture(
                 Line(InternalAccounts.CLEARING, -satang),
             ),
             at,
+        )
+
+    /** A debit card on the primary account, or a credit card with its own credit account and [creditLimit]. */
+    fun card(
+        customer: Customer,
+        credit: Boolean,
+        creditLimit: Long = 50_000_000,
+        rewardPoints: Long = 0,
+    ): UUID {
+        val accountId =
+            if (credit) {
+                UUID.randomUUID().also { id ->
+                    jdbc.update(
+                        """
+                        INSERT INTO accounts (id, user_id, type, name, account_number, is_primary, credit_limit_satang)
+                        VALUES (:id, :user, 'credit', 'Titanium Reserve', :number, FALSE, :limit)
+                        """,
+                        mapOf("id" to id, "user" to customer.userId, "number" to digits(16), "limit" to creditLimit),
+                    )
+                }
+            } else {
+                customer.primary
+            }
+        val issued = processor.issue(credit, if (credit) "Titanium Reserve" else "LuxeBank Debit")
+        return cards.insert(
+            com.luxebank.cards.NewCard(
+                userId = customer.userId,
+                accountId = accountId,
+                credit = credit,
+                productName = if (credit) "Titanium Reserve" else "LuxeBank Debit",
+                last4 = issued.last4,
+                tokenRef = issued.tokenRef,
+                expiryMonth = issued.expiryMonth,
+                expiryYear = issued.expiryYear,
+                dailyLimitSatang = 5_000_000,
+                maxDailyLimitSatang = 20_000_000,
+                rewardPoints = rewardPoints,
+            ),
+        )
+    }
+
+    fun cardAccount(cardId: UUID): UUID =
+        checkNotNull(jdbc.queryForObject("SELECT account_id FROM cards WHERE id = :id", mapOf("id" to cardId), UUID::class.java))
+
+    /** A purchase with [cardId] at a merchant, debiting the card's account. */
+    fun purchase(
+        cardId: UUID,
+        satang: Long,
+        merchant: String = "Sarnies Bangkok",
+    ): UUID =
+        ledger.post(
+            JournalType.CARD,
+            listOf(
+                Line(cardAccount(cardId), -satang, EntryDetails(merchant, Category.FOOD, Channel.CARD, cardId = cardId)),
+                Line(InternalAccounts.CLEARING, satang),
+            ),
         )
 
     companion object {

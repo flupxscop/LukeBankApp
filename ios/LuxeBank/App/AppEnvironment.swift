@@ -14,6 +14,7 @@ struct AppEnvironment {
     let apiClient: APIClient?
     let mockBank: MockBankRepository?
     let mockPayments: MockPaymentRepository?
+    let mockCards: MockCardRepository?
 
     static func makeDefault(arguments: [String] = ProcessInfo.processInfo.arguments) -> AppEnvironment {
         let storage = KeychainStore()
@@ -45,7 +46,8 @@ struct AppEnvironment {
             biometrics: SystemBiometrics(),
             apiClient: apiClient,
             mockBank: mockBank,
-            mockPayments: apiClient == nil ? MockPaymentRepository(bank: mockBank) : nil
+            mockPayments: apiClient == nil ? MockPaymentRepository(bank: mockBank) : nil,
+            mockCards: apiClient == nil ? MockCardRepository() : nil
         )
     }
 
@@ -59,7 +61,8 @@ struct AppEnvironment {
             biometrics: SystemBiometrics(),
             apiClient: nil,
             mockBank: bank,
-            mockPayments: MockPaymentRepository(bank: bank)
+            mockPayments: MockPaymentRepository(bank: bank),
+            mockCards: MockCardRepository()
         )
     }
 
@@ -81,6 +84,14 @@ struct AppEnvironment {
             return RemotePaymentRepository(api: AuthorizedAPI(client: apiClient, tokens: session))
         }
         return mockPayments ?? MockPaymentRepository(bank: mockBank)
+    }
+
+    /// Cards for the signed-in customer (M4).
+    func makeCardRepository(session: SessionManager) -> CardRepository {
+        if let apiClient {
+            return RemoteCardRepository(api: AuthorizedAPI(client: apiClient, tokens: session))
+        }
+        return mockCards ?? MockCardRepository()
     }
 
     func makeRegistrationViewModel(session: SessionManager) -> RegistrationViewModel {

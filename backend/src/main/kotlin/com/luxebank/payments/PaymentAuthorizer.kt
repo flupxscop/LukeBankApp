@@ -44,7 +44,7 @@ class PaymentAuthorizer(
                 ?: throw ApiException(ErrorCode.DEVICE_NOT_FOUND, "This device is not registered")
         if (device.pinLocked) throw ApiException(ErrorCode.PIN_LOCKED, "PIN locked, verify your identity again")
         if (requiresBiometric && proof.method != LoginMethod.BIOMETRIC) {
-            throw ApiException(ErrorCode.STEP_UP_REQUIRED, "Confirm amounts from 50,000 baht with Face ID")
+            throw ApiException(ErrorCode.STEP_UP_REQUIRED, "Confirm this with Face ID")
         }
 
         verifySignature(current, device, challenge, proof)

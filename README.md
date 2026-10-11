@@ -49,6 +49,8 @@ Payments (M3) run against stub gateways in every profile except `prod` (which re
 - Bill references of all zeros are unknown; top-ups (AIS, TrueMove H, TrueMoney) take any amount.
 - Amounts from ฿50,000 need Face ID, so test those on a device or a simulator with enrolled Face ID.
 
+Cards (M4) use a simulated card processor: the demo customer has a debit card on the main account and a Titanium Reserve credit card (฿500,000 limit, purchases, points, travel insurance). Full card numbers are test numbers derived from the processor token and are never stored; revealing them needs Face ID.
+
 Tests (unit + UI onboarding flow):
 
 ```bash

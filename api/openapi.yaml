@@ -526,6 +526,7 @@ paths:
                 ref1: { type: string, pattern: "^[A-Za-z0-9]{1,32}$" }
                 ref2: { type: string, pattern: "^[A-Za-z0-9]{0,32}$" }
                 savedBillId: { type: string, format: uuid }
+                cardId: { type: string, format: uuid, description: "Pay one of the customer's LuxeBank credit cards; settles inside the ledger" }
                 amount: { type: string }
                 memo: { type: string, maxLength: 100 }
       responses:
@@ -618,6 +619,168 @@ paths:
                   merchantName: { type: [string, "null"] }
                   amountLocked: { type: boolean, description: "Dynamic QR (point of initiation 12) with an amount: the payer cannot change it" }
         "400": { $ref: "#/components/responses/Error" }
+
+  /challenges:
+    post:
+      summary: Single-use challenge for a step-up proof (sensitive card actions)
+      description: Bound to the signed-in device, valid 2 minutes. Sign it with the device key (+ PIN) or the Face ID key.
+      operationId: issueChallenge
+      responses:
+        "200":
+          description: Challenge
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  challenge: { type: string }
+                  expiresInSeconds: { type: integer }
+
+  /cards:
+    get:
+      summary: Active and frozen cards (CARD-01, CARD-02, CARD-08)
+      operationId: listCards
+      responses:
+        "200":
+          description: Cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Card" }
+
+  /cards/{id}:
+    get:
+      summary: One card, including a lost card's final state
+      operationId: getCard
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Card
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Card" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /cards/{id}/transactions:
+    get:
+      summary: Purchases with this card and the cards it replaced (CARD-09)
+      operationId: listCardTransactions
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+      responses:
+        "200":
+          description: One page, newest first
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TransactionPage" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /cards/{id}/freeze:
+    post:
+      summary: Freeze a card at once (CARD-03); /unfreeze reverses it
+      operationId: freezeCard
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Card
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Card" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /cards/{id}/unfreeze:
+    post:
+      summary: Unfreeze a card (CARD-03)
+      operationId: unfreezeCard
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Card
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Card" }
+
+  /cards/{id}/controls:
+    patch:
+      summary: Channels and daily limit (CARD-05, CARD-06)
+      operationId: updateCardControls
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Omitted fields keep their value. dailyLimit must be > 0 and ≤ maxDailyLimit.
+              properties:
+                online: { type: boolean }
+                overseas: { type: boolean }
+                contactless: { type: boolean }
+                atm: { type: boolean }
+                dailyLimit: { $ref: "#/components/schemas/Money" }
+      responses:
+        "200":
+          description: Card
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Card" }
+        "400": { $ref: "#/components/responses/Error" }
+
+  /cards/{id}/report-lost:
+    post:
+      summary: Block a lost or stolen card and issue a replacement (CARD-04)
+      description: Needs a PIN step-up proof. Settings, points, linked account and history move to the new card.
+      operationId: reportCardLost
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StepUpProof" }
+      responses:
+        "200":
+          description: The replacement card
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Card" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /cards/{id}/sensitive:
+    post:
+      summary: Full card number and CVV (CARD-07)
+      description: |
+        Needs a BIOMETRIC step-up proof (STEP_UP_REQUIRED otherwise). Fetched from the card processor on demand,
+        never stored by LuxeBank; the response is `Cache-Control: no-store` and the app hides it after `visibleForSeconds`.
+      operationId: revealCard
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StepUpProof" }
+      responses:
+        "200":
+          description: Card details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pan: { type: string }
+                  cvv: { type: string }
+                  expiry: { type: string, examples: ["08/30"] }
+                  visibleForSeconds: { type: integer, examples: [30] }
+        "403": { $ref: "#/components/responses/Error" }
 
   /dashboard:
     get:
@@ -899,6 +1062,47 @@ components:
         topUp: { type: boolean }
         monogram: { type: string }
         partialPayment: { type: boolean, description: "Cards and insurance: any amount up to what is due. Others: exactly the amount due." }
+
+    StepUpProof:
+      type: object
+      required: [challenge, method, signature]
+      properties:
+        challenge: { type: string, description: From POST /challenges }
+        method: { type: string, enum: [PIN, BIOMETRIC] }
+        signature: { type: string, description: base64 DER ECDSA over the challenge }
+        pin: { type: string }
+
+    Card:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [debit, credit] }
+        productName: { type: string }
+        last4: { type: string }
+        expiry: { type: string, examples: ["08/30"] }
+        status: { type: string, enum: [active, frozen, lost, closed] }
+        channels:
+          type: object
+          properties:
+            online: { type: boolean }
+            overseas: { type: boolean }
+            contactless: { type: boolean }
+            atm: { type: boolean }
+        dailyLimit: { $ref: "#/components/schemas/Money" }
+        maxDailyLimit: { $ref: "#/components/schemas/Money" }
+        rewardPoints: { type: integer }
+        travelInsurance: { type: boolean }
+        credit:
+          type: [object, "null"]
+          description: Credit cards only (simulated statement)
+          properties:
+            limit: { $ref: "#/components/schemas/Money" }
+            used: { $ref: "#/components/schemas/Money" }
+            available: { $ref: "#/components/schemas/Money" }
+            minimumPayment: { $ref: "#/components/schemas/Money" }
+            dueDate: { type: [string, "null"], format: date }
+        linkedAccount: { type: [string, "null"], description: "Debit cards: masked account they spend from" }
+        linkedBalance: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
 
     Dashboard:
       type: object
