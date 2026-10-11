@@ -1,0 +1,3 @@
+# Reviewed false positives (spec 13.4.3). One fingerprint per line: commit:file:rule:line.
+# Test-only idempotency key in a unit test, replaced by a runtime UUID in the next commit.
+0b90e4a5f5598ae841873d464716892efb135ff8:ios/LuxeBankTests/PaymentTests.swift:generic-api-key:347
