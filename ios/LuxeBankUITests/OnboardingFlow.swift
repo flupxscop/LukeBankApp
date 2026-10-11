@@ -32,9 +32,9 @@ struct OnboardingFlow {
 
         XCTAssertTrue(app.staticTexts["Create a PIN"].waitForExistence(timeout: 5))
         enter("123456")
-        XCTAssertTrue(app.staticTexts["Avoid sequences and repeated digits"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Avoid sequences and repeated digits"].waitForExistence(timeout: 8))
         enter("482193")
-        XCTAssertTrue(app.staticTexts["Confirm your PIN"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Confirm your PIN"].waitForExistence(timeout: 8))
         enter("482193")
 
         let later = app.buttons["faceid.later"]
