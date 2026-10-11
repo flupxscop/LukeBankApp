@@ -5,6 +5,7 @@ import com.luxebank.accounts.AccountRow
 import com.luxebank.auth.CitizenId
 import com.luxebank.auth.CurrentDevice
 import com.luxebank.auth.LoginMethod
+import com.luxebank.cards.CardStore
 import com.luxebank.common.error.ApiException
 import com.luxebank.common.error.ErrorCode
 import com.luxebank.common.security.SecurityProperties
@@ -70,6 +71,8 @@ data class BillInquiryRequest(
     @field:Size(max = 32) @field:Pattern(regexp = "^[A-Za-z0-9]*$") val ref1: String? = null,
     @field:Size(max = 32) @field:Pattern(regexp = "^[A-Za-z0-9]*$") val ref2: String? = null,
     val savedBillId: UUID? = null,
+    /** Pay one of the customer's own LuxeBank credit cards (design "ชำระบัตร"). */
+    val cardId: UUID? = null,
     @field:Size(max = 16) val amount: String? = null,
     @field:Size(max = 100) @field:Pattern(regexp = MEMO_PATTERN) val memo: String? = null,
 )
@@ -325,6 +328,7 @@ class BillsController(
     private val resolver: RecipientResolver,
     private val payments: PaymentService,
     private val accounts: AccountQueries,
+    private val cards: CardStore,
     private val clock: Clock,
 ) {
     @GetMapping("/billers")
@@ -342,6 +346,7 @@ class BillsController(
         resolver.throttle(current)
         val english = language.isEnglish()
         val from = accounts.requireOwned(current.userId, request.fromAccountId)
+        request.cardId?.let { return payments.createInquiry(current, cardPayment(current, from, it, request), english) }
         val saved = request.savedBillId?.let { billers.findSaved(current.userId, it) ?: throw notFound() }
         val biller = billers.find(saved?.billerCode ?: request.billerCode ?: invalid()) ?: throw notFound()
         val ref1 = saved?.ref1 ?: request.ref1?.takeIf { it.isNotEmpty() } ?: invalid()
@@ -427,6 +432,30 @@ class BillsController(
         )
     }
 
+    /** Paying a LuxeBank credit card: due = what is owed, any amount up to it (the card biller is part-payable). */
+    private fun cardPayment(
+        current: CurrentDevice,
+        from: AccountRow,
+        cardId: UUID,
+        request: BillInquiryRequest,
+    ): InquiryDraft {
+        val card =
+            cards.findOwned(current.userId, cardId)?.takeIf { it.isCredit && it.status in setOf("active", "frozen") } ?: throw notFound()
+        val owed = (-card.accountBalanceSatang).coerceAtLeast(0)
+        val biller = billers.find(CARD_BILLER) ?: throw notFound()
+        return InquiryDraft(
+            kind = PaymentKind.BILL,
+            recipientType = RecipientType.BILL,
+            from = from,
+            toAccountId = card.accountId,
+            recipientName = accounts.ownerName(current.userId, english = false),
+            billerCode = biller.code,
+            ref1 = card.last4,
+            amountSatang = billAmount(biller, request.amount, owed),
+            memo = request.memo?.trim()?.ifEmpty { null },
+        )
+    }
+
     /**
      * Top-ups take the amount the customer chose; part-payable bills take any amount up to what is due;
      * every other bill is paid exactly as due, so a utility cannot be under- or over-paid.
@@ -450,6 +479,10 @@ class BillsController(
     private fun notFound() = ApiException(ErrorCode.NOT_FOUND, "Resource not found")
 
     private fun invalid(): Nothing = throw ApiException(ErrorCode.VALIDATION_FAILED, "Request is invalid")
+
+    private companion object {
+        const val CARD_BILLER = "LXCARD"
+    }
 }
 
 private fun ConfirmRequest.command(

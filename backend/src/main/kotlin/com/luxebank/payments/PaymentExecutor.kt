@@ -116,6 +116,16 @@ class PaymentExecutor(
             RecipientType.BILL -> {
                 val biller = billers.require(checkNotNull(inquiry.billerCode))
                 val details = EntryDetails(biller.name(english), Category.BILLS, Channel.BILL, biller.monogram, inquiry.memo)
+                val cardAccount = inquiry.toAccountId
+                if (cardAccount != null) {
+                    // A LuxeBank card paid from a LuxeBank account: settles inside the ledger, no bill gateway.
+                    val credit = EntryDetails(from.name, Category.TRANSFER, Channel.BILL, memo = inquiry.memo)
+                    return ledger.post(
+                        JournalType.BILL,
+                        listOf(Line(from.id, -amount, details), Line(cardAccount, amount, credit)),
+                        idempotencyKey = idempotencyHash,
+                    )
+                }
                 val entry =
                     ledger.post(
                         JournalType.BILL,

@@ -61,6 +61,7 @@ luxebank:
     interbank: stub
     promptpay: stub
     bills: stub
+    cards: stub
   security:
     pepper: ${LUXEBANK_PEPPER}
     identity-key: ${LUXEBANK_IDENTITY_KEY}

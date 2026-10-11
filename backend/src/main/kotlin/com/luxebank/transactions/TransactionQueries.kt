@@ -122,6 +122,29 @@ class TransactionQueries(
         return TransactionPage(items, next)
     }
 
+    /** Purchases made with any of [cardIds], newest first (CARD-09). */
+    fun cardPage(
+        cardIds: List<UUID>,
+        cursor: Cursor?,
+        limit: Int,
+    ): TransactionPage {
+        val params = mutableMapOf<String, Any?>("cards" to cardIds, "limit" to limit + 1)
+        val where = mutableListOf("t.card_id IN (:cards)")
+        if (cursor != null) {
+            where += "(t.occurred_at, t.id) < (:cursorAt, :cursorId)"
+            params["cursorAt"] = Timestamp.from(cursor.occurredAt)
+            params["cursorId"] = cursor.id
+        }
+        val rows =
+            jdbc.query(
+                "SELECT t.* FROM transactions t WHERE ${where.joinToString(" AND ")} ORDER BY t.occurred_at DESC, t.id DESC LIMIT :limit",
+                params,
+                mapper,
+            )
+        val items = rows.take(limit)
+        return TransactionPage(items, if (rows.size > limit) items.last().let { Cursor(it.occurredAt, it.id).encode() } else null)
+    }
+
     fun totals(
         accountId: UUID,
         filter: TransactionFilter,
