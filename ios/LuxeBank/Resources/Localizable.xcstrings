@@ -137,6 +137,40 @@
         }
       }
     },
+    "bill.amountFull": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full amount"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เต็มจำนวน"
+          }
+        }
+      }
+    },
+    "bill.amountPartial": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount (up to the amount due)"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จำนวนเงิน (ไม่เกินยอดค้างชำระ)"
+          }
+        }
+      }
+    },
     "bill.check": {
       "extractionState": "manual",
       "localizations": {
@@ -3686,6 +3720,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "จำนวนเงิน"
+          }
+        }
+      }
+    },
+    "transfer.amountLocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount set by the merchant's QR code"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จำนวนเงินกำหนดโดย QR ของร้านค้า"
           }
         }
       }

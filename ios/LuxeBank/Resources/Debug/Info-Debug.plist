@@ -4,6 +4,10 @@
 <dict>
 	<!-- Debug builds only: lets the simulator reach the docker-compose backend on localhost.
 	     Release keeps ATS with no exceptions (spec 13.1 M5). -->
+	<key>LuxeBankAPIBaseURL</key>
+	<string>$(LUXEBANK_API_BASE_URL)</string>
+	<key>LuxeBankAPIPins</key>
+	<string>$(LUXEBANK_API_PINS)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

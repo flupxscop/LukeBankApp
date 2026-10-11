@@ -9,6 +9,8 @@ struct BillTarget: Equatable, Hashable {
     var ref1: String = ""
     var ref2: String = ""
     var amount: Decimal?
+    /// From a dynamic QR: the biller fixed the amount.
+    var amountLocked = false
 }
 
 /// S13 + S14 — choose a biller or saved bill, check the reference, pay (BILL-01…05).
@@ -112,6 +114,9 @@ final class BillPayViewModel {
     }
 
     var isTopUp: Bool { biller?.topUp ?? false }
+    /// Top-ups take any amount; cards and insurance accept less than is due; a QR may fix the amount.
+    var showsAmount: Bool { isTopUp || (biller?.partialPayment ?? false) || target.amountLocked }
+    var isAmountLocked: Bool { target.amountLocked && target.amount != nil }
     var isSaved: Bool { target.saved != nil }
     var title: String { target.saved?.displayName ?? biller?.name ?? "" }
 

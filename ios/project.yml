@@ -25,11 +25,16 @@ targets:
       - path: LuxeBank
         excludes:
           - "Resources/Debug/**"
+          - "Resources/Info.plist"
     settings:
       configs:
         Debug:
           INFOPLIST_FILE: LuxeBank/Resources/Debug/Info-Debug.plist
       base:
+        INFOPLIST_FILE: LuxeBank/Resources/Info.plist
+        # Release pipelines set these; a Release build without them refuses to start (AppConfiguration).
+        LUXEBANK_API_BASE_URL: ""
+        LUXEBANK_API_PINS: ""
         PRODUCT_BUNDLE_IDENTIFIER: com.luxebank.app
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES

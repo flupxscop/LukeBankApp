@@ -1,7 +1,7 @@
 import Foundation
 
-/// Dependency container (spec 6.2). Mock repositories by default; pass
-/// `-LuxeBankAPI http://127.0.0.1:8080` as a launch argument to use a local backend.
+/// Dependency container (spec 6.2). See `AppConfiguration` for mock vs backend: Debug builds use mocks
+/// unless `-LuxeBankAPI http://127.0.0.1:8080` is passed; Release builds always use the pinned backend.
 typealias BankRepository = DashboardRepository & TransactionRepository
 
 @MainActor
@@ -25,16 +25,16 @@ struct AppEnvironment {
         #endif
         let auth: AuthRepository
         var apiClient: APIClient?
-        if let index = arguments.firstIndex(of: "-LuxeBankAPI"), arguments.indices.contains(index + 1),
-           let base = URL(string: arguments[index + 1]) {
+        switch AppConfiguration.current(arguments: arguments) {
+        case .remote(let base, let pins):
             let client = APIClient(
                 baseURL: base.appending(path: "api/v1"),
-                session: URLSession(configuration: .ephemeral, delegate: PinnedSessionDelegate(pins: []), delegateQueue: nil),
+                session: URLSession(configuration: .ephemeral, delegate: PinnedSessionDelegate(pins: pins), delegateQueue: nil),
                 deviceID: { storage.string(for: "session.deviceId").flatMap(UUID.init(uuidString:)) }
             )
             auth = RemoteAuthRepository(client: client)
             apiClient = client
-        } else {
+        case .mock:
             auth = MockAuthRepository()
         }
         let mockBank = apiClient == nil ? MockBankRepository() : nil

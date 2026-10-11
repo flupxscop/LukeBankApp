@@ -7,6 +7,8 @@ struct TransferPrefill: Equatable, Hashable {
     var proxy: String?
     var payeeID: UUID?
     var amount: Decimal?
+    /// From a dynamic QR: the merchant fixed the amount.
+    var amountLocked = false
 }
 
 /// S08 recipient → S09 amount → inquiry (TRF-01…06, TRF-08, TRF-11).
@@ -38,9 +40,12 @@ final class TransferViewModel {
     private(set) var error: LocalizedStringResource?
 
     let repository: PaymentRepository
+    /// The amount came from a dynamic QR and cannot be edited (TRF-12).
+    let amountLocked: Bool
 
     init(repository: PaymentRepository, prefill: TransferPrefill? = nil) {
         self.repository = repository
+        amountLocked = prefill?.amountLocked == true && prefill?.amount != nil
         kind = prefill?.kind ?? .otherBank
         proxy = prefill?.proxy ?? ""
         if let amount = prefill?.amount { amountText = MoneyString.string(amount).replacingOccurrences(of: ".00", with: "") }
@@ -144,16 +149,18 @@ final class TransferViewModel {
     var amount: Decimal { PaymentRules.amount(amountText) }
 
     func key(_ character: Character) {
+        guard !amountLocked else { return }
         amountText = PaymentRules.append(character, to: amountText)
         error = nil
     }
 
     func deleteKey() {
-        guard !amountText.isEmpty else { return }
+        guard !amountLocked, !amountText.isEmpty else { return }
         amountText.removeLast()
     }
 
     func add(_ value: Decimal) {
+        guard !amountLocked else { return }
         let next = amount + value
         guard next <= PaymentRules.maxAmount else { return }
         amountText = MoneyString.string(next).replacingOccurrences(of: ".00", with: "")

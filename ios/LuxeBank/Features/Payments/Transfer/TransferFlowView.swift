@@ -230,6 +230,12 @@ struct TransferAmountView: View {
             }
             .padding(.top, 20)
 
+            if viewModel.amountLocked {
+                Label("transfer.amountLocked", systemImage: "lock")
+                    .font(BankFont.caption(13, bold: true))
+                    .foregroundStyle(BankTheme.secondaryText)
+            }
+
             HStack(spacing: 8) {
                 ForEach([1_000, 5_000, 10_000], id: \.self) { value in
                     Button { viewModel.add(Decimal(value)) } label: {
@@ -244,6 +250,8 @@ struct TransferAmountView: View {
                     .buttonStyle(.plain)
                 }
             }
+            .opacity(viewModel.amountLocked ? 0 : 1)
+            .disabled(viewModel.amountLocked)
 
             if viewModel.needsFaceID {
                 Label("transfer.faceIdNote", systemImage: "faceid")
@@ -269,6 +277,8 @@ struct TransferAmountView: View {
 
             Spacer(minLength: 0)
             AmountKeypad(onKey: viewModel.key, onDelete: viewModel.deleteKey)
+                .opacity(viewModel.amountLocked ? 0.3 : 1)
+                .disabled(viewModel.amountLocked)
         }
         .padding(.horizontal, BankTheme.Spacing.screen)
         .background(BankBackground())

@@ -21,6 +21,8 @@ data class Biller(
     val ref2LabelEn: String?,
     val topUp: Boolean,
     val monogram: String,
+    /** May be paid in part (cards, insurance); other bills are paid exactly as due. */
+    val partialPayment: Boolean = false,
 ) {
     fun name(english: Boolean) = if (english) nameEn else nameTh
 }
@@ -51,6 +53,7 @@ class BillerCatalog(
                 ref2LabelEn = rs.getString("ref2_label_en"),
                 topUp = rs.getBoolean("top_up"),
                 monogram = rs.getString("monogram"),
+                partialPayment = rs.getBoolean("partial_payment"),
             )
         }
 

@@ -34,6 +34,9 @@ xcodegen generate
 open LuxeBank.xcodeproj
 ```
 
+Release builds need the backend and its certificate pins as build settings, or the app refuses to start:
+`LUXEBANK_API_BASE_URL=https://…` and `LUXEBANK_API_PINS=<base64 SPKI SHA-256>,<backup pin>`. Mock data and `-LuxeBankAPI` exist in Debug builds only.
+
 Run the `LuxeBank` scheme on an iPhone simulator. By default the app uses mock repositories. To use the local backend, add the launch argument `-LuxeBankAPI http://127.0.0.1:8080` (Debug builds allow `localhost` only).
 
 Demo customer (synthetic, local profile only): national ID `1-2345-67890-12-1`, password `LuxeDemo#2026`, OTP `000000`. On first start the `local` profile also seeds two accounts, budgets, a savings goal and a year of deterministic ledger history for the home and history screens.

@@ -32,7 +32,10 @@ final class MockPaymentRepository: PaymentRepository {
         Biller(code: "MEA", name: "การไฟฟ้านครหลวง", category: .electricity, ref1Label: "หมายเลขผู้ใช้ไฟฟ้า", ref2Label: nil, topUp: false, monogram: "MEA"),
         Biller(code: "MWA", name: "การประปานครหลวง", category: .water, ref1Label: "เลขที่ผู้ใช้น้ำ", ref2Label: nil, topUp: false, monogram: "MWA"),
         Biller(code: "AISFIB", name: "AIS Fibre", category: .internet, ref1Label: "หมายเลขบริการ", ref2Label: nil, topUp: false, monogram: "AIS"),
-        Biller(code: "LXCARD", name: "บัตรเครดิต LuxeBank", category: .creditCard, ref1Label: "เลขบัตร 16 หลัก", ref2Label: nil, topUp: false, monogram: "LX"),
+        Biller(
+            code: "LXCARD", name: "บัตรเครดิต LuxeBank", category: .creditCard, ref1Label: "เลขบัตร 16 หลัก", ref2Label: nil, topUp: false,
+            monogram: "LX", partialPayment: true
+        ),
         Biller(code: "AISTOP", name: "เติมเงิน AIS", category: .mobile, ref1Label: "เบอร์โทรศัพท์", ref2Label: nil, topUp: true, monogram: "AIS"),
         Biller(code: "TMNW", name: "TrueMoney Wallet", category: .ewallet, ref1Label: "เบอร์โทรศัพท์", ref2Label: nil, topUp: true, monogram: "TMN"),
     ]
@@ -123,6 +126,8 @@ final class MockPaymentRepository: PaymentRepository {
         guard !ref1.allSatisfy({ $0 == "0" }) else { throw server("BILL_NOT_FOUND") }
         let due: Decimal? = biller.topUp ? nil : Decimal((code + ref1).unicodeScalars.reduce(0) { $0 + Int($1.value) } * 37 % 4_700 + 300)
         guard let amount = request.amount ?? due, amount > 0 else { throw server("VALIDATION_FAILED") }
+        // Same rule as the server: full amount for utilities, up to the amount due for cards and insurance.
+        if let due, amount != due, !(biller.partialPayment && amount < due) { throw server("VALIDATION_FAILED") }
         let bill = BillInfo(
             billerCode: code, billerName: biller.name, ref1: ref1, ref2: request.ref2, customerName: "นกน้อย ใจ**",
             dueDate: biller.topUp ? nil : dueDate()
@@ -141,7 +146,8 @@ final class MockPaymentRepository: PaymentRepository {
         try await pause()
         if payload.contains("A000000677010111") {
             return ParsedQR(
-                kind: .promptPay, proxy: "0812345678", billerCode: nil, billerName: nil, ref1: nil, ref2: nil, amount: 120.5, merchantName: "Roast Coffee"
+                kind: .promptPay, proxy: "0812345678", billerCode: nil, billerName: nil, ref1: nil, ref2: nil, amount: 120.5,
+                merchantName: "Roast Coffee", amountLocked: true
             )
         }
         if payload.contains("A000000677010112") {

@@ -107,9 +107,14 @@ struct ContentView: View {
             QRScanView(viewModel: QRScanViewModel(repository: payments), onClose: { self.flow = nil }, onResult: { result in
                 switch result.kind {
                 case .promptPay:
-                    self.flow = .transfer(TransferPrefill(kind: .promptPay, proxy: result.proxy, amount: result.amount))
+                    self.flow = .transfer(
+                        TransferPrefill(kind: .promptPay, proxy: result.proxy, amount: result.amount, amountLocked: result.amountLocked)
+                    )
                 case .bill:
-                    let target = BillTarget(billerCode: result.billerCode, ref1: result.ref1 ?? "", ref2: result.ref2 ?? "", amount: result.amount)
+                    let target = BillTarget(
+                        billerCode: result.billerCode, ref1: result.ref1 ?? "", ref2: result.ref2 ?? "",
+                        amount: result.amount, amountLocked: result.amountLocked
+                    )
                     self.flow = .bills(nil, target)
                 }
             })

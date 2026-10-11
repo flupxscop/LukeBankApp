@@ -76,20 +76,27 @@ class LedgerService(
         for (line in lines) {
             val params = mapOf("entry" to entryId, "account" to line.accountId, "amount" to line.amountSatang)
             jdbc.update("INSERT INTO postings (journal_entry_id, account_id, amount_satang) VALUES (:entry, :account, :amount)", params)
-            jdbc.update("UPDATE accounts SET balance_satang = balance_satang + :amount, version = version + 1 WHERE id = :account", params)
+            // Only customer accounts keep a balance snapshot; internal accounts are summed from postings,
+            // so the clearing account is never a row every external payment must queue on.
+            if (!accounts.getValue(line.accountId).internal) {
+                jdbc.update(
+                    "UPDATE accounts SET balance_satang = balance_satang + :amount, version = version + 1 WHERE id = :account",
+                    params,
+                )
+            }
             line.details?.let { insertTransaction(entryId, line, it, occurredAt) }
         }
         return entryId
     }
 
-    /** Accounts whose balance snapshot differs from the sum of their postings. Empty means reconciled. */
+    /** Customer accounts whose balance snapshot differs from the sum of their postings. Empty means reconciled. */
     @Transactional(readOnly = true)
     fun unreconciledAccounts(): List<UUID> =
         jdbc.query(
             """
             SELECT a.id FROM accounts a
             LEFT JOIN (SELECT account_id, SUM(amount_satang) AS total FROM postings GROUP BY account_id) p ON p.account_id = a.id
-            WHERE a.balance_satang <> COALESCE(p.total, 0)
+            WHERE a.user_id IS NOT NULL AND a.balance_satang <> COALESCE(p.total, 0)
             """,
             emptyMap<String, Any>(),
         ) { rs, _ -> rs.getObject(1, UUID::class.java) }
@@ -106,16 +113,19 @@ class LedgerService(
         val balance: Long,
     )
 
-    /** Locks in id order so concurrent entries touching the same accounts cannot deadlock. */
+    /**
+     * Locks customer accounts in id order so concurrent entries cannot deadlock. Internal accounts are read
+     * without a lock: they have no balance rule to protect and would otherwise serialise every payment.
+     */
     private fun lockAccounts(ids: List<UUID>): Map<UUID, LockedAccount> {
+        val mapper = { rs: java.sql.ResultSet, _: Int ->
+            rs.getObject("id", UUID::class.java) to
+                LockedAccount(rs.getBoolean("internal"), rs.getString("status"), rs.getLong("balance_satang"))
+        }
+        val columns = "SELECT id, user_id IS NULL AS internal, status, balance_satang FROM accounts WHERE id IN (:ids)"
         val rows =
-            jdbc.query(
-                "SELECT id, user_id IS NULL AS internal, status, balance_satang FROM accounts WHERE id IN (:ids) ORDER BY id FOR UPDATE",
-                mapOf("ids" to ids),
-            ) { rs, _ ->
-                rs.getObject("id", UUID::class.java) to
-                    LockedAccount(rs.getBoolean("internal"), rs.getString("status"), rs.getLong("balance_satang"))
-            }
+            jdbc.query("$columns AND user_id IS NOT NULL ORDER BY id FOR UPDATE", mapOf("ids" to ids), mapper) +
+                jdbc.query("$columns AND user_id IS NULL", mapOf("ids" to ids), mapper)
         if (rows.size != ids.size) throw ApiException(ErrorCode.NOT_FOUND, "Resource not found")
         return rows.toMap()
     }

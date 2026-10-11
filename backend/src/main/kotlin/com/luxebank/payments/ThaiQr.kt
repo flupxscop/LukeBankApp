@@ -15,6 +15,8 @@ data class ParsedQr(
     /** Satang; null when the payer enters the amount (static QR). */
     val amountSatang: Long? = null,
     val merchantName: String? = null,
+    /** Dynamic QR (point of initiation 12) with an amount: the merchant fixed it, the payer may not change it. */
+    val amountLocked: Boolean = false,
 ) {
     enum class Type { PROMPTPAY, BILL }
 }
@@ -28,6 +30,7 @@ object ThaiQr {
     private const val PROMPTPAY_AID = "A000000677010111"
     private const val BILL_AID = "A000000677010112"
     private const val THB = "764"
+    private const val DYNAMIC = "12"
     private const val MAX_LENGTH = 512
     private const val HEADER = 4
     private const val CRC_LENGTH = 4
@@ -44,8 +47,9 @@ object ThaiQr {
         val amount = fields["54"]?.let { Money.parsePositive(it) ?: invalid() }
         val name = fields["59"]
 
-        fields["29"]?.let { return promptPay(fields(it), amount, name) }
-        fields["30"]?.let { return bill(fields(it), amount, name) }
+        val locked = fields["01"] == DYNAMIC && amount != null
+        fields["29"]?.let { return promptPay(fields(it), amount, name).copy(amountLocked = locked) }
+        fields["30"]?.let { return bill(fields(it), amount, name).copy(amountLocked = locked) }
         invalid()
     }
 

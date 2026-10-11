@@ -48,8 +48,8 @@ class PaymentExecutor(
         if (!store.consume(inquiry.id, Instant.now(clock))) {
             throw ApiException(ErrorCode.DUPLICATE_REQUEST, "This payment was already submitted")
         }
-        // Same order as LedgerService (by id), so payments and other postings cannot deadlock.
-        store.lockAccounts(listOf(inquiry.fromAccountId, inquiry.toAccountId ?: InternalAccounts.CLEARING))
+        // Customer accounts only, in the same id order as LedgerService, so postings cannot deadlock.
+        store.lockAccounts(listOfNotNull(inquiry.fromAccountId, inquiry.toAccountId))
         val from = accounts.requireOwned(inquiry.userId, inquiry.fromAccountId)
         if (inquiry.kind == PaymentKind.TRANSFER && inquiry.recipientType != RecipientType.OWN) {
             checkDailyLimit(from, inquiry.amountSatang)

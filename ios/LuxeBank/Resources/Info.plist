@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyLists/1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Backend for Release builds (AppConfiguration). HTTPS only; pins are comma-separated base64
+	     SHA-256 SPKI hashes, including at least one backup pin (spec 13.1 M5). -->
+	<key>LuxeBankAPIBaseURL</key>
+	<string>$(LUXEBANK_API_BASE_URL)</string>
+	<key>LuxeBankAPIPins</key>
+	<string>$(LUXEBANK_API_PINS)</string>
+</dict>
+</plist>

@@ -339,11 +339,12 @@ enum PaymentDTO {
         let ref2Label: String?
         let topUp: Bool
         let monogram: String
+        let partialPayment: Bool?
 
         var domain: Biller {
             Biller(
                 code: code, name: name, category: BillerCategory(rawValue: category), ref1Label: ref1Label,
-                ref2Label: ref2Label, topUp: topUp, monogram: monogram
+                ref2Label: ref2Label, topUp: topUp, monogram: monogram, partialPayment: partialPayment ?? false
             )
         }
     }
@@ -374,12 +375,13 @@ enum PaymentDTO {
         let ref2: String?
         let amount: String?
         let merchantName: String?
+        let amountLocked: Bool?
 
         func domain() throws -> ParsedQR {
             guard let kind = ParsedQR.Kind(rawValue: type) else { throw APIError.decoding }
             return ParsedQR(
                 kind: kind, proxy: proxy, billerCode: billerCode, billerName: billerName, ref1: ref1, ref2: ref2,
-                amount: try amount.map(MoneyString.decimal), merchantName: merchantName
+                amount: try amount.map(MoneyString.decimal), merchantName: merchantName, amountLocked: amountLocked ?? false
             )
         }
     }

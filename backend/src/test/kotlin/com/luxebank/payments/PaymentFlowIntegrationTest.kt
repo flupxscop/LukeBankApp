@@ -368,8 +368,24 @@ class PaymentFlowIntegrationTest(
         assertThat(saved[0]["paid"].asBoolean()).isTrue()
         assertThat(saved[0]["ref1"].asString()).isEqualTo("x6789")
 
-        billInquiry(customer, mapOf("savedBillId" to saved[0]["id"].asString(), "amount" to "100")).andExpect { status { isOk() } }
+        billInquiry(customer, mapOf("savedBillId" to saved[0]["id"].asString())).andExpect { status { isOk() } }
+        // Utilities are paid exactly as due.
+        billInquiry(customer, mapOf("savedBillId" to saved[0]["id"].asString(), "amount" to "100")).andExpect { status { isBadRequest() } }
         mockMvc.delete("/api/v1/bills/saved/${saved[0]["id"].asString()}") { bearer(customer) }.andExpect { status { isNoContent() } }
+    }
+
+    @Test
+    fun `cards and insurance may be paid in part but never above what is due`() {
+        val customer = funded()
+        val full = billInquiry(customer, mapOf("billerCode" to "LXCARD", "ref1" to "4111222233334444")).json()
+        val due = full["amount"].asString()
+
+        billInquiry(customer, mapOf("billerCode" to "LXCARD", "ref1" to "4111222233334444", "amount" to "300"))
+            .andExpect { jsonPath("$.amount") { value("300.00") } }
+        val over = (due.toBigDecimal() + java.math.BigDecimal.ONE).toPlainString()
+        billInquiry(customer, mapOf("billerCode" to "LXCARD", "ref1" to "4111222233334444", "amount" to over))
+            .andExpect { status { isBadRequest() } }
+        get("/api/v1/billers", customer, "category" to "credit_card").andExpect { jsonPath("$[0].partialPayment") { value(true) } }
     }
 
     @Test
@@ -406,6 +422,7 @@ class PaymentFlowIntegrationTest(
             jsonPath("$.type") { value("promptpay") }
             jsonPath("$.proxy") { value("0812345678") }
             jsonPath("$.amount") { value("120.50") }
+            jsonPath("$.amountLocked") { value(true) }
         }
 
         val bill =
@@ -420,6 +437,7 @@ class PaymentFlowIntegrationTest(
             jsonPath("$.billerCode") { value("MEA") }
             jsonPath("$.ref1") { value("0123456789") }
             jsonPath("$.amount") { doesNotExist() }
+            jsonPath("$.amountLocked") { value(false) }
         }
 
         val tampered = promptPay.replace("120.50", "999.50")

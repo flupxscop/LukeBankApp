@@ -87,6 +87,7 @@ data class QrResponse(
     val ref2: String?,
     val amount: String?,
     val merchantName: String?,
+    val amountLocked: Boolean,
 )
 
 data class BillerResponse(
@@ -97,6 +98,7 @@ data class BillerResponse(
     val ref2Label: String?,
     val topUp: Boolean,
     val monogram: String,
+    val partialPayment: Boolean,
 ) {
     companion object {
         fun of(
@@ -110,6 +112,7 @@ data class BillerResponse(
             if (english) biller.ref2LabelEn else biller.ref2LabelTh,
             biller.topUp,
             biller.monogram,
+            biller.partialPayment,
         )
     }
 }
@@ -345,10 +348,7 @@ class BillsController(
         val ref2 = (saved?.ref2 ?: request.ref2)?.ifEmpty { null }
         val details =
             gateway.inquire(biller.code, ref1, ref2) ?: throw ApiException(ErrorCode.BILL_NOT_FOUND, "Bill not found, check the reference")
-        val amount =
-            request.amount?.let { Money.parsePositive(it) ?: invalid() }
-                ?: details.amountDueSatang?.takeIf { it > 0 }
-                ?: invalid()
+        val amount = billAmount(biller, request.amount, details.amountDueSatang)
         val draft =
             InquiryDraft(
                 kind = PaymentKind.BILL,
@@ -423,7 +423,28 @@ class BillsController(
             ref2 = qr.ref2,
             amount = qr.amountSatang?.let(Money::format),
             merchantName = qr.merchantName,
+            amountLocked = qr.amountLocked,
         )
+    }
+
+    /**
+     * Top-ups take the amount the customer chose; part-payable bills take any amount up to what is due;
+     * every other bill is paid exactly as due, so a utility cannot be under- or over-paid.
+     */
+    private fun billAmount(
+        biller: Biller,
+        requested: String?,
+        due: Long?,
+    ): Long {
+        val amount = requested?.let { Money.parsePositive(it) ?: invalid() }
+        return when {
+            biller.topUp -> amount ?: invalid()
+            due == null || due <= 0 -> invalid()
+            amount == null -> due
+            biller.partialPayment && amount <= due -> amount
+            amount == due -> amount
+            else -> invalid()
+        }
     }
 
     private fun notFound() = ApiException(ErrorCode.NOT_FOUND, "Resource not found")

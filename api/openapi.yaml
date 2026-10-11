@@ -509,7 +509,9 @@ paths:
   /bills/inquiry:
     post:
       summary: Look up a bill and price the payment (BILL-02, BILL-04)
-      description: Pass a saved bill, or a biller with ref1/ref2. `amount` is required for top-ups and optional otherwise (defaults to the amount due).
+      description: |
+        Pass a saved bill, or a biller with ref1/ref2. `amount` is required for top-ups. For other bills it defaults
+        to the amount due; billers with `partialPayment` accept less than is due, all others only the exact amount.
       operationId: createBillInquiry
       requestBody:
         required: true
@@ -614,6 +616,7 @@ paths:
                   ref2: { type: [string, "null"] }
                   amount: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
                   merchantName: { type: [string, "null"] }
+                  amountLocked: { type: boolean, description: "Dynamic QR (point of initiation 12) with an amount: the payer cannot change it" }
         "400": { $ref: "#/components/responses/Error" }
 
   /dashboard:
@@ -895,6 +898,7 @@ components:
         ref2Label: { type: [string, "null"] }
         topUp: { type: boolean }
         monogram: { type: string }
+        partialPayment: { type: boolean, description: "Cards and insurance: any amount up to what is due. Others: exactly the amount due." }
 
     Dashboard:
       type: object

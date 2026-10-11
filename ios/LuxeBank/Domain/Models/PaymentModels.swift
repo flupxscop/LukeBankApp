@@ -152,6 +152,8 @@ struct Biller: Identifiable, Equatable, Hashable {
     let ref2Label: String?
     let topUp: Bool
     let monogram: String
+    /// Cards and insurance may be paid in part, never above what is due; other bills are paid in full.
+    var partialPayment = false
     var id: String { code }
 }
 
@@ -184,6 +186,8 @@ struct ParsedQR: Equatable {
     let ref2: String?
     let amount: Decimal?
     let merchantName: String?
+    /// Dynamic QR with an amount: the merchant fixed it and the payer cannot change it.
+    var amountLocked = false
 }
 
 /// Proof for `POST /transfers` and `/bills/payments`: the device key signs the inquiry challenge (TRF-07, TRF-09).

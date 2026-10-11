@@ -201,7 +201,10 @@ class PaymentStore(
 
     /** Row locks in the database's id order, the same order LedgerService uses. */
     fun lockAccounts(ids: List<UUID>) {
-        jdbc.query("SELECT id FROM accounts WHERE id IN (:ids) ORDER BY id FOR UPDATE", mapOf("ids" to ids.distinct())) { _, _ -> }
+        jdbc.query(
+            "SELECT id FROM accounts WHERE id IN (:ids) AND user_id IS NOT NULL ORDER BY id FOR UPDATE",
+            mapOf("ids" to ids.distinct()),
+        ) { _, _ -> }
     }
 
     /** Slip data for a payer's history row, or null when the row is not a payment by this customer. */

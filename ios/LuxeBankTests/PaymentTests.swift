@@ -407,3 +407,55 @@ struct MockEnvironmentTests {
         #expect(dashboard.recentTransactions.first?.id == slip.transactionID)
     }
 }
+
+struct AppConfigurationTests {
+    @Test func debugUsesMocksUnlessABackendIsPassed() {
+        #expect(AppConfiguration.resolve(arguments: [], info: [:], isDebug: true) == .success(.mock))
+        let remote = AppConfiguration.resolve(arguments: ["-LuxeBankAPI", "http://127.0.0.1:8080"], info: [:], isDebug: true)
+        #expect(remote == .success(.remote(baseURL: URL(string: "http://127.0.0.1:8080") ?? URL(fileURLWithPath: "/"), pins: [])))
+    }
+
+    @Test func releaseNeedsAnHttpsBackendAndPins() {
+        #expect(AppConfiguration.resolve(arguments: [], info: [:], isDebug: false) == .failure(.missingBaseURL))
+        #expect(AppConfiguration.resolve(arguments: [], info: ["LuxeBankAPIBaseURL": "http://api.test"], isDebug: false) == .failure(.missingBaseURL))
+        #expect(AppConfiguration.resolve(arguments: [], info: ["LuxeBankAPIBaseURL": "https://api.test"], isDebug: false) == .failure(.missingPins))
+        // A launch argument cannot point a release build at another server or turn on mocks.
+        let info: [String: Any] = ["LuxeBankAPIBaseURL": "https://api.test", "LuxeBankAPIPins": "pinA=, pinB="]
+        let release = AppConfiguration.resolve(arguments: ["-LuxeBankAPI", "http://evil.test"], info: info, isDebug: false)
+        #expect(release == .success(.remote(baseURL: URL(string: "https://api.test") ?? URL(fileURLWithPath: "/"), pins: ["pinA=", "pinB="])))
+    }
+}
+
+@MainActor
+struct PaymentReviewFixTests {
+    @Test func amountFromADynamicQRCannotBeEdited() async {
+        let repository = MockPaymentRepository()
+        repository.delay = .zero
+        let viewModel = TransferViewModel(
+            repository: repository, prefill: TransferPrefill(kind: .promptPay, proxy: "0812345678", amount: 120.5, amountLocked: true)
+        )
+        await viewModel.load()
+        viewModel.key("9")
+        viewModel.deleteKey()
+        viewModel.add(1_000)
+        #expect(viewModel.amount == Decimal(string: "120.5"))
+        #expect(viewModel.amountLocked)
+    }
+
+    @Test func cardsAcceptPartPaymentsButUtilitiesNeedTheFullAmount() async throws {
+        let repository = MockPaymentRepository()
+        repository.delay = .zero
+        let card = try #require(MockPaymentRepository.billerList.first { $0.partialPayment })
+        let partial = BillPayViewModel(target: BillTarget(biller: card, ref1: "4111222233334444"), biller: nil, accounts: [], repository: repository)
+        await partial.prepare()
+        #expect(partial.showsAmount)
+        partial.amountText = "100"
+        #expect(try #require(await partial.check()).amount == 100)
+
+        let electricity = MockPaymentRepository.billerList[0]
+        let utility = BillPayViewModel(target: BillTarget(biller: electricity, ref1: "0123456789"), biller: nil, accounts: [], repository: repository)
+        await utility.prepare()
+        #expect(!utility.showsAmount)
+        #expect(await utility.check() != nil)
+    }
+}

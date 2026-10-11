@@ -206,14 +206,16 @@ struct BillPayView: View {
                             }
                         }
                     }
-                    if viewModel.isTopUp {
-                        LabeledInput(title: "bill.amount") {
-                            TextField("0.00", text: $viewModel.amountText)
+                    if viewModel.showsAmount {
+                        LabeledInput(title: viewModel.isTopUp ? "bill.amount" : "bill.amountPartial", isActive: !viewModel.isAmountLocked) {
+                            TextField(viewModel.isTopUp ? "0.00" : String(localized: "bill.amountFull"), text: $viewModel.amountText)
+                                .disabled(viewModel.isAmountLocked)
                                 .keyboardType(.decimalPad)
                                 .font(BankFont.body(17, bold: true))
                                 .onChange(of: viewModel.amountText) { _, new in
                                     let filtered = new.reduce("") { PaymentRules.append($1, to: $0) }
                                     if filtered != new { viewModel.amountText = filtered }
+                                    viewModel.editedReference()
                                 }
                                 .accessibilityIdentifier("bill.amount")
                         }
