@@ -5,6 +5,8 @@ import Foundation
 @MainActor
 final class MockCardRepository: CardRepository {
     var shouldFail = false
+    /// Mirrors the server's AUTH-11 rule for a phone that reports itself compromised.
+    var deviceCompromised = false
     var delay: Duration = .milliseconds(200)
     private var store: [BankCard]
     private var history: [UUID: [Transaction]] = [:]
@@ -110,6 +112,7 @@ final class MockCardRepository: CardRepository {
 
     func reveal(cardID: UUID, challenge: String, authorization: PaymentAuthorization) async throws -> CardSecrets {
         try await pause()
+        if deviceCompromised { throw server("DEVICE_COMPROMISED") }
         guard authorization.method == .biometric else { throw server("STEP_UP_REQUIRED") }
         let card = try find(cardID)
         let prefix = card.kind == .credit ? "552133" : "453201"

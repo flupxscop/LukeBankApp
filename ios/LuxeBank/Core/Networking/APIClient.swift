@@ -16,15 +16,17 @@ final class APIClient {
     private let baseURL: URL
     private let session: URLSession
     private let deviceID: () -> UUID?
+    private let isDeviceCompromised: Bool
     private let logger = Logger(subsystem: "com.luxebank.app", category: "network")
 
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
-    init(baseURL: URL, session: URLSession, deviceID: @escaping () -> UUID?) {
+    init(baseURL: URL, session: URLSession, deviceID: @escaping () -> UUID?, isDeviceCompromised: Bool = false) {
         self.baseURL = baseURL
         self.session = session
         self.deviceID = deviceID
+        self.isDeviceCompromised = isDeviceCompromised
     }
 
     func send<Response: Decodable>(_ request: APIRequest<Response>) async throws -> Response {
@@ -55,6 +57,10 @@ final class APIClient {
         urlRequest.setValue(UUID().uuidString, forHTTPHeaderField: "X-Trace-Id")
         if let deviceID = deviceID() {
             urlRequest.setValue(deviceID.uuidString, forHTTPHeaderField: "X-Device-Id")
+        }
+        // AUTH-11: the backend then refuses money movement and card reveals from this phone.
+        if isDeviceCompromised {
+            urlRequest.setValue("compromised", forHTTPHeaderField: "X-Device-Integrity")
         }
         if let accessToken {
             urlRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")

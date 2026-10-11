@@ -2772,6 +2772,23 @@
         }
       }
     },
+    "error.deviceCompromised": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not available: this phone may not be secure"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทำรายการบนเครื่องนี้ไม่ได้ เพราะเครื่องอาจไม่ปลอดภัย"
+          }
+        }
+      }
+    },
     "error.duplicate": {
       "extractionState": "manual",
       "localizations": {
@@ -3962,6 +3979,57 @@
         }
       }
     },
+    "integrity.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This phone appears to be jailbroken or running a debugger. To keep your money safe, transfers, bill payments and revealing card details are turned off on it. You can still view balances, freeze cards and contact the bank."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "พบสัญญาณว่าเครื่องถูก jailbreak หรือมีโปรแกรมดีบักทำงานอยู่ เพื่อความปลอดภัย แอปปิดการโอน จ่ายบิล และการดูเลขบัตรบนเครื่องนี้ คุณยังดูยอดเงิน ระงับบัตร และติดต่อธนาคารได้"
+          }
+        }
+      }
+    },
+    "integrity.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This phone may not be secure"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เครื่องนี้อาจไม่ปลอดภัย"
+          }
+        }
+      }
+    },
+    "integrity.understood": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รับทราบ"
+          }
+        }
+      }
+    },
     "language.english": {
       "extractionState": "manual",
       "localizations": {
@@ -4162,6 +4230,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "สิทธิพิเศษสมาชิก GOLD"
+          }
+        }
+      }
+    },
+    "offline.badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออฟไลน์"
+          }
+        }
+      }
+    },
+    "offline.payments": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transactions are available once you're back online. Meanwhile you're seeing the last data loaded."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทำธุรกรรมได้เมื่อเชื่อมต่ออินเทอร์เน็ตแล้ว ระหว่างนี้แสดงข้อมูลล่าสุดที่โหลดไว้"
+          }
+        }
+      }
+    },
+    "offline.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No connection"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่มีการเชื่อมต่อ"
+          }
+        }
+      }
+    },
+    "offline.updated %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ข้อมูลเมื่อ %@"
           }
         }
       }

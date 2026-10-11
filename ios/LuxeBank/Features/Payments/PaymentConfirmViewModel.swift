@@ -170,6 +170,7 @@ enum PaymentErrors {
         "QR_INVALID": "error.qrInvalid",
         "RATE_LIMITED": "error.rateLimited",
         "VALIDATION_FAILED": "error.invalidDetails",
+        "DEVICE_COMPROMISED": "error.deviceCompromised",
     ]
 
     static func message(for error: Error) -> LocalizedStringResource {
