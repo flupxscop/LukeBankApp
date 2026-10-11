@@ -64,6 +64,15 @@ final class MockAuthRepository: AuthRepository {
         try await pause()
     }
 
+    var refreshShouldFail = false
+    private(set) var refreshCount = 0
+
+    func refresh(refreshToken: String) async throws -> AuthSession {
+        refreshCount += 1
+        if refreshShouldFail { throw APIError.server(code: "TOKEN_INVALID", message: "expired", remainingAttempts: nil) }
+        return AuthSession(deviceId: UUID(), accessToken: "mock-access-\(refreshCount)", refreshToken: "mock-refresh-\(refreshCount)", expiresInSeconds: 900)
+    }
+
     func profile(accessToken: String) async throws -> CustomerProfile {
         CustomerProfile(firstName: "นกน้อย", tier: "GOLD", maskedPhone: "08X-XXX-4521")
     }

@@ -77,6 +77,14 @@ final class DashboardViewModel {
         return summary.balanceHistory.filter { $0.date >= start }
     }
 
+    /// Keeps the recent list in sync after the detail screen edits a transaction.
+    func replace(_ transaction: Transaction) {
+        guard case .loaded(var summary) = state,
+              let index = summary.recentTransactions.firstIndex(where: { $0.id == transaction.id }) else { return }
+        summary.recentTransactions[index] = transaction
+        state = .loaded(summary)
+    }
+
     func toggleBalanceVisibility() {
         isBalanceHidden.toggle()
     }

@@ -25,7 +25,7 @@ struct DashboardViewModelTests {
             return
         }
         #expect(summary.primaryAccount.balance == Decimal(482_545_075) / 100)
-        #expect(summary.recentTransactions.count == 4)
+        #expect(summary.recentTransactions.count == 5)
         #expect(summary.recentTransactions.first?.merchant == "Sarnies Bangkok")
     }
 
@@ -38,15 +38,14 @@ struct DashboardViewModelTests {
     }
 
     @Test func retryRecoversAfterFailure() async {
-        var repository = MockDashboardRepository(shouldFail: true)
-        let failing = DashboardViewModel(repository: repository, calendar: calendar)
-        await failing.load()
-        #expect(failing.state == .failed)
+        let repository = MockDashboardRepository(shouldFail: true)
+        let viewModel = DashboardViewModel(repository: repository, calendar: calendar)
+        await viewModel.load()
+        #expect(viewModel.state == .failed)
 
         repository.shouldFail = false
-        let recovering = DashboardViewModel(repository: repository, calendar: calendar)
-        await recovering.retry()
-        if case .loaded = recovering.state {} else { Issue.record("Expected loaded state after retry") }
+        await viewModel.retry()
+        if case .loaded = viewModel.state {} else { Issue.record("Expected loaded state after retry") }
     }
 
     @Test(arguments: [(6, DayGreeting.morning), (13, .afternoon), (19, .evening), (2, .evening)])

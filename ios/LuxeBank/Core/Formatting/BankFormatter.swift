@@ -55,18 +55,36 @@ enum BankFormatter {
         locale: Locale = .current
     ) -> String {
         if calendar.isDate(date, inSameDayAs: now) {
-            // Banking apps in Thailand show a 24-hour clock regardless of locale.
-            let time = date.formatted(
-                Date.VerbatimFormatStyle(
-                    format: "\(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits)",
-                    locale: locale,
-                    timeZone: calendar.timeZone,
-                    calendar: calendar
-                )
-            )
-            return String(localized: "date.todayAt \(time)", locale: locale)
+            return String(localized: "date.todayAt \(time(date, calendar: calendar, locale: locale))", locale: locale)
         }
         return date.formatted(style(locale: locale, calendar: calendar).day().month(.abbreviated))
+    }
+
+    /// "19:10" — banking apps in Thailand show a 24-hour clock regardless of locale.
+    static func time(_ date: Date, calendar: Calendar = .current, locale: Locale = .current) -> String {
+        date.formatted(
+            Date.VerbatimFormatStyle(
+                format: "\(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits)",
+                locale: locale,
+                timeZone: calendar.timeZone,
+                calendar: calendar
+            )
+        )
+    }
+
+    /// History section title: "วันนี้ · 10 ต.ค." for today, otherwise "9 ต.ค. 2569".
+    static func dayHeader(_ day: Date, now: Date = Date(), calendar: Calendar = .current, locale: Locale = .current) -> String {
+        if calendar.isDate(day, inSameDayAs: now) {
+            let short = day.formatted(style(locale: locale, calendar: calendar).day().month(.abbreviated))
+            return String(localized: "date.todayHeader \(short)", locale: locale)
+        }
+        return day.formatted(style(locale: locale, calendar: calendar).day().month(.abbreviated).year())
+    }
+
+    /// "9 ต.ค. 2569 · 09:30" for the transaction detail.
+    static func dateTime(_ date: Date, calendar: Calendar = .current, locale: Locale = .current) -> String {
+        date.formatted(style(locale: locale, calendar: calendar).day().month(.abbreviated).year())
+            + " · " + time(date, calendar: calendar, locale: locale)
     }
 
     private static func style(locale: Locale, calendar: Calendar) -> Date.FormatStyle {

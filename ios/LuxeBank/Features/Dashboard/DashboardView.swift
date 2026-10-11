@@ -3,9 +3,17 @@ import SwiftUI
 
 struct DashboardView: View {
     @State private var viewModel: DashboardViewModel
+    private let onShowHistory: (Account) -> Void
+    private let onSelectTransaction: (Transaction) -> Void
 
-    init(viewModel: DashboardViewModel) {
+    init(
+        viewModel: DashboardViewModel,
+        onShowHistory: @escaping (Account) -> Void = { _ in },
+        onSelectTransaction: @escaping (Transaction) -> Void = { _ in }
+    ) {
         _viewModel = State(initialValue: viewModel)
+        self.onShowHistory = onShowHistory
+        self.onSelectTransaction = onSelectTransaction
     }
 
     var body: some View {
@@ -48,9 +56,14 @@ struct DashboardView: View {
             SpendingRingCard(spending: summary.spending)
             HStack(alignment: .top, spacing: 12) {
                 CashbackCard(amount: summary.cashbackThisMonth, trend: summary.cashbackTrend, isHidden: viewModel.isBalanceHidden)
-                SavingsGoalCard(goal: summary.savingsGoal)
+                if let goal = summary.savingsGoal { SavingsGoalCard(goal: goal) }
             }
-            RecentTransactionsSection(transactions: summary.recentTransactions, now: viewModel.today)
+            RecentTransactionsSection(
+                transactions: summary.recentTransactions,
+                now: viewModel.today,
+                onShowAll: { onShowHistory(summary.primaryAccount) },
+                onSelect: onSelectTransaction
+            )
         }
     }
 
@@ -350,34 +363,19 @@ private struct SavingsGoalCard: View {
 private struct RecentTransactionsSection: View {
     let transactions: [Transaction]
     let now: Date
+    let onShowAll: () -> Void
+    let onSelect: (Transaction) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            SectionHeader(title: "transactions.title")
+            SectionHeader(title: "transactions.title", actionTitle: "transactions.seeAll", action: onShowAll)
                 .padding(.bottom, 4)
             ForEach(transactions) { transaction in
-                HStack(spacing: 14) {
-                    IconTile(
-                        content: transaction.monogram.map(IconTile.Content.monogram) ?? .symbol(transaction.category.symbol),
-                        size: 44
-                    )
-                    .cardShadow(radius: 12, y: 4, opacity: 0.08)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(transaction.merchant)
-                            .font(BankFont.body(15, bold: true))
-                            .foregroundStyle(BankTheme.ink)
-                        (Text(transaction.category.title) + Text(verbatim: " · " + BankFormatter.transactionDate(transaction.date, now: now)))
-                            .font(BankFont.caption(12))
-                            .foregroundStyle(BankTheme.secondaryText)
-                    }
-                    Spacer()
-                    Text(BankFormatter.signedAmount(transaction.amount))
-                        .font(BankFont.body(15, bold: true))
-                        .monospacedDigit()
-                        .foregroundStyle(transaction.isIncome ? BankTheme.positive : BankTheme.ink)
+                Button { onSelect(transaction) } label: {
+                    TransactionRow(transaction: transaction, subtitle: BankFormatter.transactionDate(transaction.date, now: now))
                 }
-                .padding(.vertical, 8)
-                .accessibilityElement(children: .combine)
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("dashboard.transaction")
             }
         }
         .padding(.horizontal, 4)

@@ -9,6 +9,7 @@ protocol AuthRepository {
     func challenge(deviceID: UUID) async throws -> String
     func login(deviceID: UUID, challenge: String, signature: Data, method: LoginMethod, pin: String?) async throws -> AuthSession
     func enableBiometric(publicKey: Data, accessToken: String) async throws
+    func refresh(refreshToken: String) async throws -> AuthSession
     func profile(accessToken: String) async throws -> CustomerProfile
     func logout(accessToken: String) async throws
 }
@@ -62,6 +63,10 @@ final class RemoteAuthRepository: AuthRepository {
         try await client.sendWithoutResponse(
             method: "PUT", path: "auth/biometric", body: ["biometricPublicKey": publicKey.base64EncodedString()], accessToken: accessToken
         )
+    }
+
+    func refresh(refreshToken: String) async throws -> AuthSession {
+        try await client.send(APIRequest(method: "POST", path: "auth/refresh", body: ["refreshToken": refreshToken]))
     }
 
     func profile(accessToken: String) async throws -> CustomerProfile {
