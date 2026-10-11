@@ -296,11 +296,16 @@ final class StubProtocol: URLProtocol {
     nonisolated(unsafe) static var status = 200
     nonisolated(unsafe) static var body = Data()
     nonisolated(unsafe) static var lastRequest: URLRequest?
+    /// Responses served in order before falling back to `status`/`body`.
+    nonisolated(unsafe) static var queue: [(status: Int, body: String)] = []
+    nonisolated(unsafe) static var requests: [URLRequest] = []
     static let deviceID = UUID()
 
     static func client(status: Int, body: String) -> APIClient {
         self.status = status
         self.body = Data(body.utf8)
+        queue = []
+        requests = []
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubProtocol.self]
         return APIClient(
@@ -315,12 +320,35 @@ final class StubProtocol: URLProtocol {
 
     override func startLoading() {
         Self.lastRequest = request
-        if let url = request.url, let response = HTTPURLResponse(url: url, statusCode: Self.status, httpVersion: nil, headerFields: nil) {
+        Self.requests.append(request)
+        var status = Self.status
+        var body = Self.body
+        if !Self.queue.isEmpty {
+            let next = Self.queue.removeFirst()
+            status = next.status
+            body = Data(next.body.utf8)
+        }
+        if let url = request.url, let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: nil) {
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         }
-        client?.urlProtocol(self, didLoad: Self.body)
+        client?.urlProtocol(self, didLoad: body)
         client?.urlProtocolDidFinishLoading(self)
     }
 
     override func stopLoading() {}
+
+    /// URLSession moves bodies into a stream before they reach a URLProtocol.
+    static func body(of request: URLRequest) -> Data {
+        guard let stream = request.httpBodyStream else { return request.httpBody ?? Data() }
+        stream.open()
+        defer { stream.close() }
+        var data = Data()
+        var buffer = [UInt8](repeating: 0, count: 1024)
+        while stream.hasBytesAvailable {
+            let count = stream.read(&buffer, maxLength: buffer.count)
+            if count <= 0 { break }
+            data.append(buffer, count: count)
+        }
+        return data
+    }
 }

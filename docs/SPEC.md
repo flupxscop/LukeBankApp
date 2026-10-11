@@ -2,8 +2,8 @@
 
 | รายการ | รายละเอียด |
 |---|---|
-| เวอร์ชันเอกสาร | 0.3 (Draft) |
-| วันที่ | 2026-10-10 |
+| เวอร์ชันเอกสาร | 0.4 (Draft) |
+| วันที่ | 2026-10-11 |
 | ขอบเขต | iOS App (SwiftUI) + Backend API (Spring Boot / Kotlin) |
 | สถานะ | ข้อตกลงหลักยืนยันแล้ว ดูหัวข้อ [12. Decision Log](#12-decision-log) |
 
@@ -342,11 +342,13 @@ Account(id, user_id, type[savings|current], name, account_number,
 JournalEntry(id, type[transfer|bill|card|fee|interest], reference_no,
              idempotency_key UNIQUE, status[pending|posted|failed|reversed],
              created_at)
-Posting(id, journal_entry_id, account_id, amount_satang BIGINT, direction)
+Posting(id, journal_entry_id, account_id, amount_satang BIGINT)   -- มีเครื่องหมาย: + เข้าบัญชี, − ออกจากบัญชี (D16)
 
-Transaction(id, account_id | card_id, journal_entry_id, merchant,
-            category, amount_satang, direction[in|out], memo,
+Transaction(id, account_id | card_id, journal_entry_id, merchant, monogram,
+            category, amount_satang (มีเครื่องหมาย), memo,
             channel, occurred_at)            -- read model
+
+SavingsGoal(id, user_id, account_id, name, target_satang)   -- ยอดออม = ยอดคงเหลือของ account_id
 
 Transfer(id, journal_entry_id, from_account_id, to_type[own|internal|other_bank|promptpay],
          to_bank_code, to_account_or_proxy, to_name, amount_satang,
@@ -363,7 +365,7 @@ Card(id, user_id, account_id?, type[debit|credit], product_name,
      online_enabled, overseas_enabled, contactless_enabled, atm_enabled,
      reward_points)
 
-SpendingBudget(id, user_id, category, month, limit_satang)
+SpendingBudget(id, user_id, kind[lifestyle|travel], month, limit_satang)   -- ใช้งบเดือนล่าสุดที่ ≤ เดือนที่ถาม
 NotificationPref(user_id, transactions, security, marketing)
 AuditLog(id, user_id, action, metadata JSONB, ip, device_id, trace_id, created_at)
 ```
@@ -396,7 +398,7 @@ Base URL `/api/v1` · JSON · Header ที่ต้องส่ง: `Authorizat
 | GET | `/accounts` | รายการบัญชีพร้อมยอดคงเหลือ |
 | GET | `/accounts/{id}/transactions?cursor&limit&from&to&category&direction&q` | ประวัติรายการ |
 | GET | `/transactions/{id}` | รายละเอียดรายการ |
-| PATCH | `/transactions/{id}` | แก้หมวด หรือ memo |
+| PATCH | `/transactions/{id}` | แก้หมวด หรือ memo (`clearMemo: true` เพื่อลบบันทึก) |
 | GET | `/insights/spending?month=2026-10` | สรุปตามหมวดเทียบกับงบ |
 | GET | `/dashboard` | ข้อมูลรวมสำหรับหน้าแรก (บัญชีหลัก, cashback, ผลตอบแทน, รายการล่าสุด 5 รายการ, insights) |
 
@@ -523,7 +525,7 @@ Loading (skeleton), Content, Empty, Error (มีปุ่มลองใหม�
 
 | # | หัวข้อ | ข้อตกลง (2026-10-10) |
 |---|---|---|
-| D1 | Backend stack | Spring Boot 4 (3.5 OSS support ended; its critical CVEs are fixed only in Framework 7) + **Kotlin** + Gradle (Kotlin DSL), PostgreSQL, Redis |
+| D1 | Backend stack | **Spring Boot 4** (สาย 3.5 หมด OSS support แล้ว และช่องโหว่ระดับ critical แก้เฉพาะใน Framework 7) + **Kotlin** + Gradle (Kotlin DSL), PostgreSQL, Redis |
 | D2 | ระบบเงิน | เป้าหมายคือ **production จริง** แต่ยังไม่มีสัญญาหรือใบอนุญาต จึงพัฒนาด้วย adapter + stub (ดู 7.0) |
 | D3 | Repo | **Monorepo** แยกเป็น `ios/`, `backend/` และ `api/` |
 | D4 | ยืนยันตัวตนครั้งแรก | **เลขบัตรประชาชน + รหัสผ่าน + OTP** แล้วตั้ง PIN 6 หลัก |
@@ -537,6 +539,8 @@ Loading (skeleton), Content, Empty, Error (มีปุ่มลองใหม�
 | D12 | Git workflow | แยก branch ต่อ milestone (เช่น `m0-foundation`) แล้วเปิด PR ให้รีวิวก่อน merge เข้า `main` |
 | D13 | Apple Developer | ยังไม่มี account จึงทดสอบบน Simulator · ทดสอบ Push ด้วยไฟล์ `.apns` · Development Team ยังเว้นว่าง |
 | D14 | Dev toolchain | JDK 21 (Homebrew `openjdk@21`), Docker ผ่าน Colima, Gradle wrapper |
+| D16 | Ledger | จำนวนเงินใน `postings` และ `transactions` เป็น **สตางค์แบบมีเครื่องหมาย** (+ เข้า, − ออก) แทนคอลัมน์ `direction` · DB บังคับเองว่าแต่ละ entry รวมได้ 0 (constraint trigger ตอน commit), posting แก้หรือลบไม่ได้, และยอดลูกค้าติดลบไม่ได้ · เงินที่เข้าหรือออกจากธนาคารผ่านบัญชีภายใน `INT-CLEARING` |
+| D17 | งบประมาณ | งบรายเดือนแบ่งเป็น 2 กลุ่มตามดีไซน์หน้าแรก: **ไลฟ์สไตล์** (อาหาร, ช้อปปิ้ง, ที่พัก, บิล, อื่น ๆ) และ **ท่องเที่ยว** (เดินทาง, ท่องเที่ยว) · โอนเงิน, ลงทุน, รายรับ และเงินคืนไม่นับเป็นการใช้จ่าย |
 | D15 | Typography | ใช้ฟอนต์ระบบ **Thonburi** ทั้งแอป (ไทยและอังกฤษ) ไม่ต้อง bundle ฟอนต์เพิ่ม · ฟอนต์มีแค่น้ำหนัก Light/Regular/Bold |
 
 ### คำถามที่ยังเปิด (ไม่ block การเริ่มพัฒนา)

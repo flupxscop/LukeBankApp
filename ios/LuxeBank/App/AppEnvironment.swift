@@ -2,13 +2,17 @@ import Foundation
 
 /// Dependency container (spec 6.2). Mock repositories by default; pass
 /// `-LuxeBankAPI http://127.0.0.1:8080` as a launch argument to use a local backend.
+typealias BankRepository = DashboardRepository & TransactionRepository
+
 @MainActor
 struct AppEnvironment {
-    let dashboardRepository: DashboardRepository
     let authRepository: AuthRepository
     let secureStorage: SecureStorage
     let keyManager: DeviceKeyManaging
     let biometrics: BiometricAvailability
+    /// Set when running against a backend; otherwise `mockBank` serves data.
+    let apiClient: APIClient?
+    let mockBank: MockBankRepository?
 
     static func makeDefault(arguments: [String] = ProcessInfo.processInfo.arguments) -> AppEnvironment {
         let storage = KeychainStore()
@@ -19,6 +23,7 @@ struct AppEnvironment {
         }
         #endif
         let auth: AuthRepository
+        var apiClient: APIClient?
         if let index = arguments.firstIndex(of: "-LuxeBankAPI"), arguments.indices.contains(index + 1),
            let base = URL(string: arguments[index + 1]) {
             let client = APIClient(
@@ -27,31 +32,42 @@ struct AppEnvironment {
                 deviceID: { storage.string(for: "session.deviceId").flatMap(UUID.init(uuidString:)) }
             )
             auth = RemoteAuthRepository(client: client)
+            apiClient = client
         } else {
             auth = MockAuthRepository()
         }
         return AppEnvironment(
-            dashboardRepository: MockDashboardRepository(),
             authRepository: auth,
             secureStorage: storage,
             keyManager: SecureEnclaveKeyManager(storage: storage),
-            biometrics: SystemBiometrics()
+            biometrics: SystemBiometrics(),
+            apiClient: apiClient,
+            mockBank: apiClient == nil ? MockBankRepository() : nil
         )
     }
 
     static var mock: AppEnvironment {
         let storage = InMemorySecureStorage()
         return AppEnvironment(
-            dashboardRepository: MockDashboardRepository(),
             authRepository: MockAuthRepository(),
             secureStorage: storage,
             keyManager: SecureEnclaveKeyManager(storage: storage),
-            biometrics: SystemBiometrics()
+            biometrics: SystemBiometrics(),
+            apiClient: nil,
+            mockBank: MockBankRepository()
         )
     }
 
     func makeSessionManager() -> SessionManager {
         SessionManager(repository: authRepository, storage: secureStorage, keys: keyManager)
+    }
+
+    /// Accounts, dashboard and history for the signed-in customer, authorised through `session`.
+    func makeBankRepository(session: SessionManager) -> BankRepository {
+        if let apiClient {
+            return RemoteBankRepository(api: AuthorizedAPI(client: apiClient, tokens: session))
+        }
+        return mockBank ?? MockBankRepository()
     }
 
     func makeRegistrationViewModel(session: SessionManager) -> RegistrationViewModel {

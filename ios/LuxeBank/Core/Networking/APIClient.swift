@@ -6,6 +6,7 @@ struct APIRequest<Response: Decodable> {
     let path: String
     var body: Encodable?
     var accessToken: String?
+    var query: [URLQueryItem] = []
 }
 
 /// Thin JSON client for `/api/v1`. Adds the headers from spec section 9 and maps errors.
@@ -26,7 +27,7 @@ final class APIClient {
     }
 
     func send<Response: Decodable>(_ request: APIRequest<Response>) async throws -> Response {
-        let data = try await perform(request.method, request.path, body: request.body, accessToken: request.accessToken)
+        let data = try await perform(request.method, request.path, query: request.query, body: request.body, accessToken: request.accessToken)
         do {
             return try decoder.decode(Response.self, from: data)
         } catch {
@@ -35,11 +36,13 @@ final class APIClient {
     }
 
     func sendWithoutResponse(method: String, path: String, body: Encodable? = nil, accessToken: String? = nil) async throws {
-        _ = try await perform(method, path, body: body, accessToken: accessToken)
+        _ = try await perform(method, path, query: [], body: body, accessToken: accessToken)
     }
 
-    private func perform(_ method: String, _ path: String, body: Encodable?, accessToken: String?) async throws -> Data {
-        var urlRequest = URLRequest(url: baseURL.appending(path: path))
+    private func perform(_ method: String, _ path: String, query: [URLQueryItem], body: Encodable?, accessToken: String?) async throws -> Data {
+        var url = baseURL.appending(path: path)
+        if !query.isEmpty { url.append(queryItems: query) }
+        var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = method
         urlRequest.timeoutInterval = 30
         urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")

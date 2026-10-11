@@ -1,41 +1,93 @@
 import Foundation
 
-struct Account: Identifiable, Equatable {
+struct Account: Identifiable, Equatable, Hashable {
     let id: UUID
     let name: String
     let maskedNumber: String
     let balance: Decimal
 }
 
-enum TransactionCategory: String, CaseIterable {
+/// Server category codes (`/transactions`). Unknown codes from a newer server read as `.other`.
+enum TransactionCategory: String, CaseIterable, Identifiable {
     case food
+    case shopping
     case housing
-    case investment
+    case bills
     case transport
+    case travel
+    case investment
     case transfer
+    case income
+    case cashback
+    case other
+
+    var id: Self { self }
+
+    init(code: String) {
+        self = TransactionCategory(rawValue: code) ?? .other
+    }
+
+    /// Categories a customer can move a transaction into (TXN-05).
+    static let assignable: [TransactionCategory] = [.food, .shopping, .housing, .bills, .transport, .travel, .other]
 
     var title: LocalizedStringResource {
         switch self {
         case .food: "category.food"
+        case .shopping: "category.shopping"
         case .housing: "category.housing"
-        case .investment: "category.investment"
+        case .bills: "category.bills"
         case .transport: "category.transport"
+        case .travel: "category.travel"
+        case .investment: "category.investment"
         case .transfer: "category.transfer"
+        case .income: "category.income"
+        case .cashback: "category.cashback"
+        case .other: "category.other"
         }
     }
 
     var symbol: String {
         switch self {
         case .food: "fork.knife"
+        case .shopping: "bag"
         case .housing: "house"
-        case .investment: "chart.line.uptrend.xyaxis"
+        case .bills: "doc.text"
         case .transport: "tram"
+        case .travel: "airplane"
+        case .investment: "chart.line.uptrend.xyaxis"
         case .transfer: "arrow.left.arrow.right"
+        case .income: "arrow.down.left"
+        case .cashback: "gift"
+        case .other: "circle.grid.2x2"
         }
     }
 }
 
-struct Transaction: Identifiable, Equatable {
+enum TransactionChannel: String {
+    case promptpay
+    case transfer
+    case card
+    case bill
+    case deposit
+    case interest
+    case cashback
+    case system
+
+    var title: LocalizedStringResource {
+        switch self {
+        case .promptpay: "channel.promptpay"
+        case .transfer: "channel.transfer"
+        case .card: "channel.card"
+        case .bill: "channel.bill"
+        case .deposit: "channel.deposit"
+        case .interest: "channel.interest"
+        case .cashback: "channel.cashback"
+        case .system: "channel.system"
+        }
+    }
+}
+
+struct Transaction: Identifiable, Equatable, Hashable {
     let id: UUID
     let merchant: String
     /// Short initials shown instead of the category icon, e.g. "SB".
@@ -43,8 +95,47 @@ struct Transaction: Identifiable, Equatable {
     let category: TransactionCategory
     let date: Date
     let amount: Decimal
+    var channel: TransactionChannel = .card
+    var memo: String?
 
     var isIncome: Bool { amount > 0 }
+}
+
+struct TransactionDetail: Equatable {
+    var transaction: Transaction
+    let referenceNo: String
+    let isPosted: Bool
+    let accountName: String
+    let accountMaskedNumber: String
+}
+
+struct MoneyTotals: Equatable {
+    let moneyIn: Decimal
+    let moneyOut: Decimal
+}
+
+struct TransactionPage: Equatable {
+    let items: [Transaction]
+    let nextCursor: String?
+    /// Totals over the whole filtered range; only on the first page.
+    let totals: MoneyTotals?
+}
+
+enum TransactionDirection: String, CaseIterable, Identifiable {
+    case incoming = "in"
+    case outgoing = "out"
+
+    var id: Self { self }
+}
+
+/// Filters for the history screen (TXN-01…03).
+struct TransactionQuery: Equatable {
+    var direction: TransactionDirection?
+    var category: TransactionCategory?
+    var periodDays: Int = 30
+    var text: String = ""
+
+    static let periods = [7, 30, 90, 365]
 }
 
 struct BalancePoint: Identifiable, Equatable {
@@ -94,6 +185,7 @@ struct SpendingSummary: Equatable {
 }
 
 struct SavingsGoal: Equatable {
+    var name: String = ""
     let saved: Decimal
     let target: Decimal
 
@@ -106,6 +198,7 @@ struct SavingsGoal: Equatable {
 struct DashboardSummary: Equatable {
     let customerFirstName: String
     let primaryAccount: Account
+    var accounts: [Account] = []
     let monthChange: Decimal
     let monthChangeRate: Decimal
     let balanceHistory: [BalancePoint]
@@ -113,8 +206,8 @@ struct DashboardSummary: Equatable {
     /// Weekly cashback, oldest first.
     let cashbackTrend: [Decimal]
     let spending: SpendingSummary
-    let savingsGoal: SavingsGoal
-    let recentTransactions: [Transaction]
+    let savingsGoal: SavingsGoal?
+    var recentTransactions: [Transaction]
 }
 
 enum DayGreeting: Equatable {

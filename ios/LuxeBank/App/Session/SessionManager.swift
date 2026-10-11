@@ -18,6 +18,8 @@ final class SessionManager {
     }
 
     static let autoLockInterval: TimeInterval = 5 * 60
+    /// Renew a little before expiry so a request never leaves with a token about to lapse.
+    static let tokenRenewalMargin: TimeInterval = 30
 
     private(set) var state: State
     private(set) var deviceID: UUID?
@@ -32,6 +34,8 @@ final class SessionManager {
     private let now: () -> Date
     private var lastActivity: Date
     private var backgroundedAt: Date?
+    private var accessTokenExpiry: Date?
+    private var refreshTask: Task<String, Error>?
 
     init(repository: AuthRepository, storage: SecureStorage, keys: DeviceKeyManaging, now: @escaping () -> Date = Date.init) {
         self.repository = repository
@@ -53,7 +57,7 @@ final class SessionManager {
         try storage.set(session.deviceId.uuidString, for: StorageKey.deviceID)
         try storage.set(session.refreshToken, for: StorageKey.refreshToken)
         deviceID = session.deviceId
-        accessToken = session.accessToken
+        apply(session)
         resetReason = nil
         await refreshProfile(accessToken: session.accessToken)
     }
@@ -98,7 +102,7 @@ final class SessionManager {
             let challenge = try await repository.challenge(deviceID: deviceID)
             let signature = try await keys.sign(Data(challenge.utf8), with: method == .pin ? .device : .biometric, reason: reason)
             let session = try await repository.login(deviceID: deviceID, challenge: challenge, signature: signature, method: method, pin: pin)
-            accessToken = session.accessToken
+            apply(session)
             try storage.set(session.refreshToken, for: StorageKey.refreshToken)
             lastActivity = now()
             state = .unlocked
@@ -122,11 +126,48 @@ final class SessionManager {
         }
     }
 
+    // MARK: Access tokens (AUTH-07)
+
+    /// A non-expired access token for API calls. Renews it silently with the refresh token when needed.
+    func validAccessToken() async throws -> String {
+        guard state == .unlocked else { throw APIError.unauthorized }
+        if let accessToken, let accessTokenExpiry, accessTokenExpiry.timeIntervalSince(now()) > Self.tokenRenewalMargin {
+            return accessToken
+        }
+        return try await refreshAccessToken()
+    }
+
+    /// Rotates the refresh token. Concurrent callers share one request; a rejected token locks the app.
+    func refreshAccessToken() async throws -> String {
+        if let refreshTask { return try await refreshTask.value }
+        let task = Task { () throws -> String in
+            guard let refreshToken = storage.string(for: StorageKey.refreshToken) else { throw APIError.unauthorized }
+            let session = try await repository.refresh(refreshToken: refreshToken)
+            try storage.set(session.refreshToken, for: StorageKey.refreshToken)
+            apply(session)
+            return session.accessToken
+        }
+        refreshTask = task
+        defer { refreshTask = nil }
+        do {
+            return try await task.value
+        } catch let error as APIError where error == .unauthorized || error.code == "TOKEN_INVALID" {
+            lock()
+            throw APIError.unauthorized
+        }
+    }
+
+    private func apply(_ session: AuthSession) {
+        accessToken = session.accessToken
+        accessTokenExpiry = now().addingTimeInterval(TimeInterval(session.expiresInSeconds))
+    }
+
     // MARK: Locking (AUTH-04, AUTH-06)
 
     func lock() {
         guard state == .unlocked else { return }
         accessToken = nil
+        accessTokenExpiry = nil
         state = .locked
     }
 
@@ -180,3 +221,5 @@ final class SessionManager {
         static let firstName = "customer.firstName"
     }
 }
+
+extension SessionManager: AccessTokenProviding {}

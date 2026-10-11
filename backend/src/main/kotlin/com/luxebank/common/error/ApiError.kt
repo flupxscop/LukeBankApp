@@ -46,6 +46,10 @@ enum class ErrorCode(
     SIGNATURE_INVALID(HttpStatus.UNAUTHORIZED),
     BIOMETRIC_NOT_ENABLED(HttpStatus.CONFLICT),
     TOKEN_INVALID(HttpStatus.UNAUTHORIZED),
+
+    // Money (TRF-*, ledger)
+    INSUFFICIENT_FUNDS(HttpStatus.UNPROCESSABLE_CONTENT),
+    ACCOUNT_UNAVAILABLE(HttpStatus.CONFLICT),
 }
 
 /** Business error that maps to the shared error body. */

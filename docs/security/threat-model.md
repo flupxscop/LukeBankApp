@@ -4,7 +4,7 @@ STRIDE review of the system as designed in [SPEC.md](../SPEC.md). Update this fi
 
 | Field | Value |
 |---|---|
-| Version | 0.2 (M1 auth) |
+| Version | 0.3 (M2 ledger and history) |
 | Date | 2026-10-11 |
 | Scope | iOS app, `/api/v1` backend, PostgreSQL, Redis, external adapters (stubs) |
 
@@ -38,10 +38,10 @@ STRIDE review of the system as designed in [SPEC.md](../SPEC.md). Update this fi
 | S2 | Stolen refresh token reused on another device | Auth | Rotation + reuse detection, token bound to device key (13.1 A07) | **Done (M1, tested)** |
 | S3 | Forged request from a non-registered device | API | Money requests signed by Secure Enclave key, verified server-side (13.1 A08) | Planned M3 |
 | T1 | Amount or recipient changed between confirm and submit | Transfer | Server-side `inquiry_id` binds amount/recipient for 5 min; client values ignored (TRF-05) | Planned M3 |
-| T2 | Ledger tampered with or left unbalanced | DB | Double-entry constraint, `SELECT … FOR UPDATE`, daily reconciliation (13.2) | Planned M2 |
+| T2 | Ledger tampered with or left unbalanced | DB | Double-entry constraint trigger, append-only postings, non-negative customer balance check, `SELECT … FOR UPDATE` in id order, idempotency key, daily reconciliation job (13.2) | **Done (M2, tested incl. concurrent debits)** |
 | T3 | Audit trail altered to hide activity | DB | Append-only trigger + hash chain | **Done (V1 migration, tested)** |
 | R1 | Customer disputes a transfer they made | Transfer | Audit log with actor, device, IP, trace ID; signed request stored (13.1 A09) | Planned M3 |
-| I1 | Another customer's accounts read via ID guessing (BOLA) | API | UUID IDs, ownership check in service layer, BOLA test per endpoint (13.1 A01/API1) | Planned M2 |
+| I1 | Another customer's accounts read via ID guessing (BOLA) | API | UUID IDs, every account/transaction query scoped by owner and answering 404, BOLA tests for list, detail and update (13.1 A01/API1) | **Done (M2, tested)** |
 | I2 | Sensitive data leaks through logs, errors or screenshots | All | No stack traces, shared error body, log masking, App Switcher overlay, screenshot block on card reveal | **Partly done** (error body, App Switcher overlay, OTP never logged); card reveal in M4 |
 | I3 | Man-in-the-middle on hostile Wi-Fi | Network | ATS with no exceptions (Debug allows localhost only) + public-key pinning (13.1 M5) | **Built (M1); pins added when the production host exists** |
 | I4 | Data extracted from a lost or jailbroken phone | Device | Keychain `WhenUnlockedThisDeviceOnly`, Secure Enclave keys, jailbreak signal (AUTH-11) | **Done (M1)**; jailbreak warning UI in M5 |

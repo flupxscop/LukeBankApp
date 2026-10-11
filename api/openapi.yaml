@@ -239,11 +239,109 @@ paths:
                   maskedPhone: { type: string }
         "401": { $ref: "#/components/responses/Error" }
 
+  /accounts:
+    get:
+      summary: The customer's open accounts, primary first (DASH-01, DASH-03)
+      operationId: listAccounts
+      responses:
+        "200":
+          description: Accounts with balances
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Account" }
+        "401":
+          $ref: "#/components/responses/Error"
+
+  /accounts/{accountId}/transactions:
+    get:
+      summary: History with filters and cursor pagination (TXN-01…03)
+      description: Another customer's account returns 404, never 403 (BOLA, spec 13.4.4).
+      operationId: listTransactions
+      parameters:
+        - { name: accountId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: cursor, in: query, schema: { type: string }, description: Opaque; from the previous page's nextCursor }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+        - { name: from, in: query, schema: { type: string, format: date }, description: Inclusive, Thai calendar day }
+        - { name: to, in: query, schema: { type: string, format: date }, description: Inclusive, Thai calendar day }
+        - { name: category, in: query, schema: { $ref: "#/components/schemas/Category" } }
+        - { name: direction, in: query, schema: { type: string, enum: [in, out] } }
+        - { name: q, in: query, schema: { type: string, maxLength: 50 }, description: Merchant or memo, case-insensitive literal match }
+      responses:
+        "200":
+          description: One page, newest first
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TransactionPage" }
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+
+  /transactions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      summary: Transaction detail (TXN-04)
+      operationId: getTransaction
+      responses:
+        "200":
+          description: Detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TransactionDetail" }
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+    patch:
+      summary: Change category or memo (TXN-05)
+      operationId: updateTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: At least one change. `memo` is trimmed; `clearMemo` removes it.
+              properties:
+                category: { $ref: "#/components/schemas/Category" }
+                memo: { type: string, maxLength: 100, pattern: "^[^\\p{Cntrl}]*$" }
+                clearMemo: { type: boolean, default: false }
+      responses:
+        "200":
+          description: Updated detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TransactionDetail" }
+        "400":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+
+  /insights/spending:
+    get:
+      summary: Monthly spending against budget (DASH-06)
+      description: Transfers, investments, income and cashback are not spending.
+      operationId: getSpendingInsight
+      parameters:
+        - { name: month, in: query, schema: { type: string, pattern: "^\\d{4}-\\d{2}$", examples: ["2026-10"] }, description: Defaults to the current Thai month }
+      responses:
+        "200":
+          description: Spending summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SpendingInsight" }
+        "400":
+          $ref: "#/components/responses/Error"
+
   /dashboard:
     get:
       summary: Home screen summary
       operationId: getDashboard
-      x-milestone: M2
       parameters:
         - $ref: "#/components/parameters/AcceptLanguage"
         - $ref: "#/components/parameters/DeviceId"
@@ -256,6 +354,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Dashboard"
         "401":
+          $ref: "#/components/responses/Error"
+        "404":
           $ref: "#/components/responses/Error"
         "503":
           $ref: "#/components/responses/Error"
@@ -332,38 +432,104 @@ components:
             remainingAttempts:
               type: integer
 
+    Category:
+      type: string
+      enum: [food, shopping, housing, bills, transport, travel, other, investment, transfer, income, cashback]
+      description: Clients treat unknown values as `other`.
+
     Account:
       type: object
-      required: [id, name, maskedNumber, balance]
+      required: [id, name, maskedNumber, type, primary, balance]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
         maskedNumber: { type: string, examples: ["•••• 4289"] }
+        type: { type: string, enum: [current, savings] }
+        primary: { type: boolean }
         balance: { $ref: "#/components/schemas/Money" }
 
     Transaction:
       type: object
-      required: [id, merchant, category, occurredAt, amount]
+      required: [id, accountId, merchant, category, channel, occurredAt, amount]
       properties:
         id: { type: string, format: uuid }
+        accountId: { type: string, format: uuid }
         merchant: { type: string }
         monogram: { type: [string, "null"] }
-        category:
-          type: string
-          enum: [food, housing, investment, transport, transfer]
+        category: { $ref: "#/components/schemas/Category" }
+        channel: { type: string, enum: [promptpay, transfer, card, bill, deposit, interest, cashback, system] }
         occurredAt: { type: string, format: date-time }
-        amount: { $ref: "#/components/schemas/Money" }
+        amount: { $ref: "#/components/schemas/Money", description: "Negative = money out" }
+        memo: { type: [string, "null"] }
+
+    TransactionPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Transaction" }
+        nextCursor: { type: [string, "null"] }
+        summary:
+          description: Totals for the whole filtered range; first page only.
+          type: [object, "null"]
+          properties:
+            moneyIn: { $ref: "#/components/schemas/Money" }
+            moneyOut: { $ref: "#/components/schemas/Money" }
+
+    TransactionDetail:
+      type: object
+      required: [transaction, referenceNo, status, account]
+      properties:
+        transaction: { $ref: "#/components/schemas/Transaction" }
+        referenceNo: { type: string, examples: ["LX261010K7M2Q9XA4C"] }
+        status: { type: string, enum: [pending, posted, failed, reversed] }
+        account:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+            maskedNumber: { type: string }
+
+    SpendingInsight:
+      type: object
+      properties:
+        month: { type: string, examples: ["2026-10"] }
+        totalSpent: { $ref: "#/components/schemas/Money" }
+        totalBudget: { $ref: "#/components/schemas/Money" }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/KindSpending" }
+        byCategory:
+          type: array
+          items:
+            type: object
+            properties:
+              category: { $ref: "#/components/schemas/Category" }
+              spent: { $ref: "#/components/schemas/Money" }
+
+    KindSpending:
+      type: object
+      required: [kind, spent, budget]
+      properties:
+        kind: { type: string, enum: [lifestyle, travel] }
+        spent: { $ref: "#/components/schemas/Money" }
+        budget: { $ref: "#/components/schemas/Money", description: "0.00 when no budget is set" }
 
     Dashboard:
       type: object
-      required: [customerFirstName, primaryAccount, monthChange, monthChangeRate, balanceHistory, cashbackThisMonth, spending, savingsGoal, recentTransactions]
+      required: [customerFirstName, primaryAccount, accounts, monthChange, monthChangeRate, balanceHistory, cashbackThisMonth, cashbackTrend, spending, recentTransactions]
       properties:
-        customerFirstName: { type: string }
+        customerFirstName: { type: string, description: In the Accept-Language language }
         primaryAccount: { $ref: "#/components/schemas/Account" }
-        monthChange: { $ref: "#/components/schemas/Money" }
-        monthChangeRate: { type: string, examples: ["6.8"] }
+        accounts:
+          type: array
+          items: { $ref: "#/components/schemas/Account" }
+        monthChange: { $ref: "#/components/schemas/Money", description: Balance change over 30 days }
+        monthChangeRate: { type: string, examples: ["6.8"], description: Percent, one decimal }
         balanceHistory:
           type: array
+          description: Closing balance for each of the last 365 days, oldest first
           items:
             type: object
             required: [date, balance]
@@ -373,6 +539,7 @@ components:
         cashbackThisMonth: { $ref: "#/components/schemas/Money" }
         cashbackTrend:
           type: array
+          description: Weekly cashback for the last 5 weeks, oldest first
           items: { $ref: "#/components/schemas/Money" }
         spending:
           type: object
@@ -380,17 +547,12 @@ components:
           properties:
             categories:
               type: array
-              items:
-                type: object
-                required: [kind, spent, budget]
-                properties:
-                  kind: { type: string, enum: [lifestyle, travel] }
-                  spent: { $ref: "#/components/schemas/Money" }
-                  budget: { $ref: "#/components/schemas/Money" }
+              items: { $ref: "#/components/schemas/KindSpending" }
         savingsGoal:
-          type: object
-          required: [saved, target]
+          type: [object, "null"]
+          required: [name, saved, target]
           properties:
+            name: { type: string }
             saved: { $ref: "#/components/schemas/Money" }
             target: { $ref: "#/components/schemas/Money" }
         recentTransactions:

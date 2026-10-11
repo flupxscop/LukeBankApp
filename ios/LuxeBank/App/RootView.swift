@@ -30,7 +30,7 @@ struct RootView: View {
             case .locked:
                 LockView(session: session)
             case .unlocked:
-                ContentView(environment: environment)
+                ContentView(environment: environment, session: session)
                     .simultaneousGesture(TapGesture().onEnded { session.registerActivity() })
             }
 
