@@ -343,14 +343,13 @@ extension APIClientTests {
             let repository = RemotePaymentRepository(api: AuthorizedAPI(client: client, tokens: tokens))
             let auth = PaymentAuthorization(method: .pin, signature: Data([1, 2, 3]), pin: "482193")
 
-            let slip = try await repository.confirmTransfer(
-                inquiryID: UUID(), authorization: auth, idempotencyKey: "key-1234567890abcdef", saveAsFavorite: true
-            )
+            let key = UUID().uuidString
+            let slip = try await repository.confirmTransfer(inquiryID: UUID(), authorization: auth, idempotencyKey: key, saveAsFavorite: true)
 
             #expect(slip.amount == Decimal(string: "75000.00"))
             #expect(slip.kind == .otherBank)
             let request = try #require(StubProtocol.lastRequest)
-            #expect(request.value(forHTTPHeaderField: "Idempotency-Key") == "key-1234567890abcdef")
+            #expect(request.value(forHTTPHeaderField: "Idempotency-Key") == key)
             let json = try JSONSerialization.jsonObject(with: StubProtocol.body(of: request)) as? [String: Any]
             #expect(json?["signature"] as? String == Data([1, 2, 3]).base64EncodedString())
             #expect(json?["method"] as? String == "PIN")
