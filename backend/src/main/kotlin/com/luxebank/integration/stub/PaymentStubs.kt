@@ -8,7 +8,7 @@ import com.luxebank.integration.ExternalAccount
 import com.luxebank.integration.InterbankTransferGateway
 import com.luxebank.integration.PromptPayDirectory
 import com.luxebank.integration.StubAdapter
-import org.springframework.context.annotation.Profile
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.time.Clock
 import java.time.LocalDate
@@ -28,7 +28,7 @@ object StubDirectory {
 }
 
 @Component
-@Profile("!prod")
+@ConditionalOnProperty(prefix = "luxebank.integrations", name = ["interbank"], havingValue = "stub", matchIfMissing = true)
 class StubInterbankGateway :
     InterbankTransferGateway,
     StubAdapter {
@@ -53,7 +53,7 @@ class StubInterbankGateway :
 
 /** Mobile numbers and national IDs resolve to a stub person at a stub bank. */
 @Component
-@Profile("!prod")
+@ConditionalOnProperty(prefix = "luxebank.integrations", name = ["promptpay"], havingValue = "stub", matchIfMissing = true)
 class StubPromptPayDirectory :
     PromptPayDirectory,
     StubAdapter {
@@ -66,7 +66,7 @@ class StubPromptPayDirectory :
 
 /** Each reference owes a stable amount due on the 25th; a reference of all zeros is unknown. */
 @Component
-@Profile("!prod")
+@ConditionalOnProperty(prefix = "luxebank.integrations", name = ["bills"], havingValue = "stub", matchIfMissing = true)
 class StubBillGateway(
     private val clock: Clock,
 ) : BillPaymentGateway,

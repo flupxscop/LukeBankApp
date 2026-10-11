@@ -508,7 +508,7 @@ Loading (skeleton), Content, Empty, Error (มีปุ่มลองใหม�
 | **M4 Cards** | Backend: cards (stub processor) · App: S15–S16 | จัดการบัตรได้ครบ |
 | **M5 Profile & Notifications** | S19–S20, APNs, การตั้งค่าการแจ้งเตือน | ฟีเจอร์ครบตาม scope |
 | **M6 Hardening** | Security review, pen test, accessibility audit, performance, UAT | พร้อม release บน stub/staging |
-| **M7 Go-live** | เสียบ production adapter (SMS, ITMX, bill, card), เลือก cloud, audit และขออนุญาตจากหน่วยงานกำกับ | ใช้งานจริง (ขึ้นกับสัญญาและใบอนุญาต) |
+| **M7 Go-live** (ไม่อยู่ในขอบเขตตาม D26 — ทางเลือกในอนาคต ดู integration-guide) | เสียบ production adapter (SMS, ITMX, bill, card), เลือก cloud, audit และขออนุญาตจากหน่วยงานกำกับ | ใช้งานจริง (ขึ้นกับสัญญาและใบอนุญาต) |
 
 ### Definition of Done (ต่อฟีเจอร์)
 - ผ่าน acceptance criteria ตาม Requirement ID
@@ -549,6 +549,7 @@ Loading (skeleton), Content, Empty, Error (มีปุ่มลองใหม�
 | D23 | บัญชีภายใน | บัญชี internal (เช่น `INT-CLEARING`) ไม่เก็บ balance snapshot และไม่ถูกล็อก ยอดคำนวณจาก postings · การกระทบยอดรายวันตรวจเฉพาะบัญชีลูกค้า เพื่อไม่ให้ทุกการจ่ายเงินออกนอกธนาคารต้องต่อคิวที่แถวเดียว |
 | D24 | ยอดจ่ายบิลและ QR | บิลทั่วไปต้องจ่ายเท่ายอดค้างพอดี · บัตรเครดิตและประกันจ่ายบางส่วนได้แต่ไม่เกินยอดค้าง · เติมเงินกำหนดยอดเอง · QR แบบ dynamic ที่มียอดเงินจะล็อกยอดในแอป |
 | D25 | Transaction และ connection | audit log เขียนใน transaction เดียวกับผู้เรียก (ไม่เปิด connection ที่สองระหว่างถือ connection แรก) · ขั้นยืนยันการจ่ายเงินแยกส่วนตรวจสิทธิ์และ audit ออกนอก transaction ที่ย้ายเงิน |
+| D26 | ขอบเขตโครงการ | สร้างเป็น **ระบบจำลอง** ไม่ใช่แอปธนาคารจริง (ตัดสินใจ 2026-10-11) · ระบบภายนอกทั้งหมดใช้ stub adapter เลือกได้ทีละระบบผ่าน `luxebank.integrations.*` · แกนกลาง (ledger, วงเงิน, idempotency, ลายเซ็นอุปกรณ์, audit) ทำเหมือนของจริง · งานที่จำเป็นเฉพาะระบบจริง (timeout, reversal, hosting, pin, M7) บันทึกเป็นจุดต่อขยายใน [integration-guide.md](integration-guide.md) ไม่ใช่งานค้าง |
 | D15 | Typography | ใช้ฟอนต์ระบบ **Thonburi** ทั้งแอป (ไทยและอังกฤษ) ไม่ต้อง bundle ฟอนต์เพิ่ม · ฟอนต์มีแค่น้ำหนัก Light/Regular/Bold |
 
 ### คำถามที่ยังเปิด (ไม่ block การเริ่มพัฒนา)

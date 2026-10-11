@@ -5,6 +5,7 @@ Premium iOS banking app (SwiftUI) with a Spring Boot + Kotlin backend.
 - Specification: [docs/SPEC.md](docs/SPEC.md)
 - Threat model: [docs/security/threat-model.md](docs/security/threat-model.md)
 - API contract: [api/openapi.yaml](api/openapi.yaml)
+- Simulation scope and how to connect real systems later: [docs/integration-guide.md](docs/integration-guide.md)
 
 ## Screenshots
 <p align="center">
