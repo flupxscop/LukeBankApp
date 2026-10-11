@@ -11,17 +11,18 @@ enum BankTheme {
     static let lineStrong = Color(hex: 0xE3E6EC)
 
     // MARK: Text
+    // Every text colour passes WCAG AA (4.5:1) on the surfaces it is used on (NFR-09, ThemeContrastTests).
     static let ink = Color(hex: 0x0E1116)
     static let secondaryText = Color(hex: 0x5B6270)
-    static let fractionText = Color(hex: 0xA3A9B5)
+    static let fractionText = Color(hex: 0x6A707C)
 
     // MARK: Accent & status
     static let accent = Color(hex: 0x2F5BD3)
     static let accentSoft = Color(hex: 0x5B84F0)
     static let accentTint = Color(hex: 0xE3EBFF)
-    static let positive = Color(hex: 0x1F8A5B)
+    static let positive = Color(hex: 0x1B7A50)
     static let positiveTint = Color(hex: 0xE6F4EC)
-    static let negative = Color(hex: 0xC8473D)
+    static let negative = Color(hex: 0xC0443A)
     static let negativeTint = Color(hex: 0xFFF5F4)
     static let caution = Color(hex: 0x9A5B00)
     static let cautionTint = Color(hex: 0xFFF2DD)
@@ -61,8 +62,11 @@ enum BankTheme {
 /// Thonburi system font (spec D15), scaled with Dynamic Type (NFR-09).
 /// Thonburi ships Light, Regular and Bold faces only.
 enum BankFont {
+    /// Big numbers; smaller ones (e.g. the satang part) scale with a smaller text style so Dynamic Type
+    /// grows them in step with the text around them (NFR-09).
     static func figure(_ size: CGFloat) -> Font {
-        .custom("Thonburi", size: size, relativeTo: .largeTitle).weight(.bold)
+        let style: Font.TextStyle = size >= 34 ? .largeTitle : size >= 22 ? .title : .title3
+        return .custom("Thonburi", size: size, relativeTo: style).weight(.bold)
     }
 
     static func title(_ size: CGFloat = 26) -> Font {

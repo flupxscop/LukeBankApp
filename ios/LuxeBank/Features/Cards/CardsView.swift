@@ -10,7 +10,7 @@ struct CardFace: View {
             HStack {
                 Text(verbatim: "LUXE").font(BankFont.caption(14, bold: true)).tracking(4.5)
                 Spacer()
-                Text(verbatim: card.productName.uppercased()).font(BankFont.caption(10, bold: true)).tracking(2)
+                Text(verbatim: card.productName.uppercased()).font(BankFont.caption(10, bold: true)).tracking(2).lineLimit(1).minimumScaleFactor(0.3)
                     .foregroundStyle(isCredit ? Color(hex: 0x3A404C) : .white.opacity(0.75))
             }
             Spacer()
@@ -20,7 +20,7 @@ struct CardFace: View {
                 .accessibilityHidden(true)
             Spacer()
             HStack(alignment: .bottom) {
-                Text(verbatim: "•••• \(card.last4)").font(BankFont.body(17, bold: true)).tracking(2.5).monospacedDigit()
+                Text(verbatim: "•••• \(card.last4)").font(BankFont.body(17, bold: true)).tracking(2.5).monospacedDigit().lineLimit(1).minimumScaleFactor(0.5)
                 Spacer()
                 if card.isFrozen {
                     Text("cards.frozenBadge")
@@ -188,7 +188,9 @@ struct CardsView: View {
                     .foregroundStyle(tint)
                     .frame(width: 48, height: 48)
                     .background(fill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                Text(title).font(BankFont.caption(12, bold: true)).foregroundStyle(BankTheme.ink).lineLimit(1).minimumScaleFactor(0.8)
+                // Two lines at large text sizes rather than a cut-off word (NFR-09).
+                Text(title).font(BankFont.caption(12, bold: true)).foregroundStyle(BankTheme.ink)
+                    .lineLimit(3).minimumScaleFactor(0.6).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity)
         }
@@ -236,7 +238,7 @@ struct CardsView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title).font(BankFont.caption(11)).foregroundStyle(highlight ? BankTheme.caution : BankTheme.secondaryText)
             Text(verbatim: value).font(BankFont.body(14, bold: true)).foregroundStyle(highlight ? BankTheme.caution : BankTheme.ink)
-                .monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+                .monospacedDigit().lineLimit(1).minimumScaleFactor(0.5)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

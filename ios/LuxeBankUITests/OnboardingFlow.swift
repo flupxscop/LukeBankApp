@@ -20,6 +20,7 @@ struct OnboardingFlow {
 
         let password = app.secureTextFields["register.password"]
         password.tap()
+        focus(password)
         password.typeText("LuxeDemo#2026")
         let submit = app.buttons["register.submit"]
         submit.tap()

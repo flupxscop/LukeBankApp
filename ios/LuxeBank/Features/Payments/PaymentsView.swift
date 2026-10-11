@@ -172,7 +172,9 @@ struct PaymentsView: View {
                     Button { onStart(.transfer(TransferPrefill(kind: payee.kind, payeeID: payee.id))) } label: {
                         VStack(spacing: 8) {
                             PayeeAvatar(payee: payee)
-                            Text(verbatim: payee.displayName).font(BankFont.caption(12, bold: true)).lineLimit(1)
+                            Text(verbatim: payee.displayName)
+                                .font(BankFont.caption(12, bold: true))
+                                .lineLimit(2).minimumScaleFactor(0.6).multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
                     }

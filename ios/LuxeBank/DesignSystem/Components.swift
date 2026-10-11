@@ -135,6 +135,8 @@ struct MoneyText: View {
     let amount: Decimal
     var size: CGFloat = 44
     var hidden = false
+    /// What the amount is, e.g. "Total balance"; VoiceOver reads it before the amount.
+    var label: LocalizedStringKey?
 
     var body: some View {
         let parts = BankFormatter.currencyParts(amount)
@@ -150,6 +152,11 @@ struct MoneyText: View {
         }
         .monospacedDigit()
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(hidden ? Text("balance.hidden") : Text(BankFormatter.currency(amount)))
+        .accessibilityLabel(label.map { Text($0) } ?? amountText)
+        .accessibilityValue(label == nil ? Text(verbatim: "") : amountText)
+    }
+
+    private var amountText: Text {
+        hidden ? Text("balance.hidden") : Text(BankFormatter.currency(amount))
     }
 }

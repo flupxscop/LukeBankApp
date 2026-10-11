@@ -53,6 +53,8 @@ Cards (M4) use a simulated card processor: the demo customer has a debit card on
 
 Profile and notifications (M5): the profile tab shows the relationship manager (call, or a simulated chat), settings for PIN, Face ID, language (applies on the next launch) and notification preferences, registered devices and sign-out. Every money movement and security event lands in the in-app inbox (bell on the home screen); the backend's push adapter only logs. To see a banner on the simulator, drag a file from `ios/PushSamples` onto it, or run `xcrun simctl push booted com.luxebank.app ios/PushSamples/money-in.apns`.
 
+Hardening (M6): a jailbroken phone (or `-SimulateCompromisedDevice` in Debug) is warned and cannot pay; with no connection (or `-SimulateOffline`) the app shows the last data with an "Offline" badge. Security-test traceability, accessibility and performance results and the UAT checklist are in [docs/hardening-report.md](docs/hardening-report.md).
+
 Tests (unit + UI onboarding flow):
 
 ```bash

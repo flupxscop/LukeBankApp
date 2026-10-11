@@ -133,22 +133,20 @@ private struct BalanceCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("dashboard.wealth")
-                    .font(BankFont.caption(13))
-                    .foregroundStyle(BankTheme.secondaryText)
-                Button(action: onToggleHidden) {
-                    Image(systemName: isHidden ? "eye.slash" : "eye")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(BankTheme.secondaryText)
-                        .frame(width: 44, height: 32)
+            // The range picker moves to its own row when large text leaves no room beside the title (NFR-09).
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    title
+                    Spacer()
+                    RangePicker(selection: $range)
                 }
-                .accessibilityLabel(Text("balance.toggle"))
-                Spacer()
-                RangePicker(selection: $range)
+                VStack(alignment: .leading, spacing: 8) {
+                    title
+                    RangePicker(selection: $range)
+                }
             }
 
-            MoneyText(amount: summary.primaryAccount.balance, size: 40, hidden: isHidden)
+            MoneyText(amount: summary.primaryAccount.balance, size: 40, hidden: isHidden, label: "dashboard.wealth")
                 .padding(.top, 8)
 
             HStack(spacing: 8) {
@@ -178,6 +176,23 @@ private struct BalanceCard: View {
     }
 }
 
+private extension BalanceCard {
+    var title: some View {
+        HStack(spacing: 0) {
+            Text("dashboard.wealth")
+                .font(BankFont.caption(13))
+                .foregroundStyle(BankTheme.secondaryText)
+            Button(action: onToggleHidden) {
+                Image(systemName: isHidden ? "eye.slash" : "eye")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(BankTheme.secondaryText)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel(Text("balance.toggle"))
+        }
+    }
+}
+
 private struct RangePicker: View {
     @Binding var selection: DashboardViewModel.HistoryRange
 
@@ -190,8 +205,12 @@ private struct RangePicker: View {
                         .font(BankFont.caption(11, bold: true))
                         .foregroundStyle(isSelected ? Color.white : BankTheme.secondaryText)
                         .padding(.horizontal, 10)
-                        .frame(minHeight: 28)
+                        .frame(minWidth: 36, minHeight: 28)
                         .background(isSelected ? BankTheme.ink : .clear, in: Capsule())
+                        .fixedSize()
+                        // The capsule stays compact; the tap area meets the 44 pt minimum.
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])

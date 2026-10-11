@@ -5,19 +5,34 @@ struct WelcomeView: View {
     let resetReason: SessionManager.ResetReason?
     let onStart: () -> Void
     @Environment(\.openURL) private var openURL
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
+        // At accessibility text sizes the screen scrolls instead of cutting text off (NFR-09).
+        if typeSize.isAccessibilitySize {
+            ScrollView { content }
+                .background(BankBackground())
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             HStack {
                 Text(verbatim: "LUXEBANK")
                     .font(BankFont.caption(14, bold: true))
                     .tracking(4)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                 Spacer()
                 Button {
                     if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 } label: {
                     Label { Text("welcome.language") } icon: { Image(systemName: "globe") }
                         .font(BankFont.caption(13, bold: true))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                         .foregroundStyle(BankTheme.ink)
                         .padding(.horizontal, 14)
                         .frame(minHeight: 36)
@@ -27,8 +42,11 @@ struct WelcomeView: View {
             }
 
             Spacer()
-            TitaniumCardArt()
-            Spacer()
+            // The artwork gives way to the text at accessibility sizes (NFR-09).
+            if !typeSize.isAccessibilitySize {
+                TitaniumCardArt()
+                Spacer()
+            }
 
             VStack(alignment: .leading, spacing: 12) {
                 if let resetReason {
@@ -42,9 +60,11 @@ struct WelcomeView: View {
                 (Text("welcome.title.1") + Text(verbatim: "\n") + Text("welcome.title.2").foregroundColor(BankTheme.accent))
                     .font(BankFont.title(34))
                     .foregroundStyle(BankTheme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text("welcome.subtitle")
                     .font(BankFont.body(15))
                     .foregroundStyle(BankTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 28)
@@ -60,6 +80,7 @@ struct WelcomeView: View {
                 .font(BankFont.caption(12))
                 .foregroundStyle(BankTheme.secondaryText)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 14)
         }
         .padding(.horizontal, 24)
