@@ -1,7 +1,7 @@
 // Renders the LuxeBank promo film (1920×1080, 30 fps, H.264) from the demo recording and the app icon,
 // with Apple's frameworks only. Run through scripts/make-promo.sh.
 //
-//   swift scripts/make-promo.swift <demo.mp4> <icon.png> <output.mp4>
+//   swift scripts/make-promo.swift <demo.mp4> <icon.png> <output.mp4> [bitrate, default 10000000]
 //
 // Footage times refer to docs/demo/luxebank-demo.mp4 as recorded by scripts/record-demo.sh; re-check them
 // (scripts/make-promo.sh prints contact sheets) if the demo is recorded again.
@@ -11,7 +11,7 @@ import CoreText
 import Foundation
 
 let arguments = CommandLine.arguments
-guard arguments.count == 4 else {
+guard arguments.count == 4 || arguments.count == 5 else {
     FileHandle.standardError.write(Data("usage: make-promo <demo.mp4> <icon.png> <output.mp4>\n".utf8))
     exit(2)
 }
@@ -20,6 +20,7 @@ guard let icon = NSImage(contentsOfFile: arguments[2])?.cgImage(forProposedRect:
     fatalError("Cannot read icon \(arguments[2])")
 }
 let outputURL = URL(fileURLWithPath: arguments[3])
+let bitrate = arguments.count == 5 ? Int(arguments[4]) ?? 10_000_000 : 10_000_000
 
 // MARK: Canvas and timing
 
@@ -276,7 +277,7 @@ let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
     AVVideoCodecKey: AVVideoCodecType.h264,
     AVVideoWidthKey: width,
     AVVideoHeightKey: height,
-    AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: 10_000_000, AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel],
+    AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: bitrate, AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel],
 ])
 input.expectsMediaDataInRealTime = false
 let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [

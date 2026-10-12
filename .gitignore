@@ -29,4 +29,6 @@ backend/build/
 
 # Demo recordings (the GIF in docs/demo is committed) and demo builds
 docs/demo/*.mp4
+# …except the web version of the film the README links to
+!docs/demo/luxebank-promo.mp4
 dist/

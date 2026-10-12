@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Renders the LuxeBank promo film from the demo recording: dist/luxebank-promo.mp4 (1920×1080, 30 fps, silent).
+# Renders the LuxeBank promo film from the demo recording (1920×1080, 30 fps, silent):
+#   dist/luxebank-promo.mp4         full quality (10 Mbit/s)
+#   docs/demo/luxebank-promo.mp4    web version linked from the README (1.5 Mbit/s)
+#   docs/demo/luxebank-promo.jpg    README poster
 #
 #   scripts/make-promo.sh            (run scripts/record-demo.sh first if docs/demo/luxebank-demo.mp4 is missing)
 set -euo pipefail
@@ -15,3 +18,5 @@ ictool="$(xcode-select -p)/../Applications/Icon Composer.app/Contents/Executable
 
 swiftc -O "$root/scripts/make-promo.swift" -o "$work/make-promo" 2> "$work/build.log" || { cat "$work/build.log"; exit 1; }
 "$work/make-promo" "$demo" "$work/icon.png" "$root/dist/luxebank-promo.mp4"
+"$work/make-promo" "$demo" "$work/icon.png" "$root/docs/demo/luxebank-promo.mp4" 1500000
+swift "$root/scripts/promo-poster.swift" "$root/docs/demo/luxebank-promo.mp4" 4.6 "$root/docs/demo/luxebank-promo.jpg"

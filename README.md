@@ -13,6 +13,14 @@
 
 SwiftUI · iOS 17+ · Spring Boot 4 · Kotlin · PostgreSQL · Redis
 
+<br/>
+
+<a href="docs/demo/luxebank-promo.mp4">
+  <img src="docs/demo/luxebank-promo.jpg" alt="Watch the LuxeBank film (44 s)" width="720"/>
+</a>
+
+<sub>▶ Watch the 44-second film</sub>
+
 </div>
 
 ---
@@ -38,8 +46,9 @@ business logic. See [From simulation to a real system](docs/integration-guide.md
 
 No Apple Developer account is needed: the app's mock bank runs entirely on the device.
 
-- **Watch:** the recording above walks through PIN unlock, the home screen, a PromptPay transfer to its slip, cards
-  and the profile. Re-record it with `scripts/record-demo.sh`.
+- **Watch:** the [film](docs/demo/luxebank-promo.mp4) at the top, or the recording below it, which walks through PIN
+  unlock, the home screen, a PromptPay transfer to its slip, cards and the profile. Re-record with
+  `scripts/record-demo.sh` and re-render the film with `scripts/make-promo.sh`.
 - **Try it in a browser:** `scripts/build-demo.sh` produces `dist/LuxeBank-demo-simulator.zip`, an unsigned
   simulator build that services such as [Appetize.io](https://appetize.io) run in any browser. Upload it as an iOS
   app and share the link.
@@ -199,7 +208,7 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 | iOS unit (110+ tests) | View models, repositories, PIN rules, pinning, contrast ratios |
 | iOS UI | Onboarding, history, transfers, bills, cards, profile, offline, compromised device, accessibility audit |
 | Measurements | `scripts/measure-app.sh`: launch, responsiveness, memory, CPU, disk and app size |
-| Demo | `scripts/record-demo.sh` records the README walk-through; `scripts/build-demo.sh` builds the browser demo |
+| Demo | `scripts/record-demo.sh` records the walk-through, `scripts/make-promo.sh` renders the film, `scripts/build-demo.sh` builds the browser demo |
 
 Run the UI tests against the real backend with `TEST_RUNNER_LUXEBANK_API=http://127.0.0.1:8080`.
 
@@ -223,7 +232,7 @@ Every pull request runs:
 ├── backend/             Spring Boot API (Kotlin), Flyway migrations, integration tests
 ├── api/openapi.yaml     API contract shared by app and backend
 ├── docs/                Specification, security, hardening and metrics reports
-├── scripts/             Tooling: measure-app.sh, record-demo.sh, build-demo.sh
+├── scripts/             Tooling: measure-app.sh, record-demo.sh, make-promo.sh, build-demo.sh
 ├── docker-compose.yml   Local stack: PostgreSQL, Redis, API
 └── .env.example         Template for local secrets
 ```
