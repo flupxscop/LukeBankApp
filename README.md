@@ -77,11 +77,17 @@ Start Docker (Colima):
 colima start
 ```
 
-Run the whole stack:
+Run the whole stack. Secrets come from `.env`, which git ignores; copy the example and set your own `DB_PASSWORD` first:
+
+```bash
+cp .env.example .env
+```
 
 ```bash
 docker compose up -d --build
 ```
+
+Running the backend outside Docker (`./gradlew bootRun --args='--spring.profiles.active=local'`) needs the same variables exported, e.g. `set -a; source ../.env; set +a`.
 
 Health check: `curl http://127.0.0.1:8080/actuator/health`
 
