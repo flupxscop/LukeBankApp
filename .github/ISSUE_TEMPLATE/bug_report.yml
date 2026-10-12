@@ -1,0 +1,40 @@
+name: Bug report
+description: Something in the app or the API does not work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: For security problems, use **Security → Report a vulnerability** instead of an issue.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [iOS app, Backend API, Both, Documentation, Tooling or CI]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Sign in as the demo customer
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: iPhone 18 Pro simulator, iOS 27, mock data / local backend
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or screenshots
+      description: Remove any secrets before posting.

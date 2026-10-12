@@ -13,6 +13,14 @@
 
 SwiftUI · iOS 17+ · Spring Boot 4 · Kotlin · PostgreSQL · Redis
 
+<br/>
+
+<a href="docs/demo/luxebank-promo.mp4">
+  <img src="docs/demo/luxebank-promo.jpg" alt="Watch the LuxeBank film (44 s)" width="720"/>
+</a>
+
+<sub>▶ Watch the 44-second film</sub>
+
 </div>
 
 ---
@@ -29,8 +37,26 @@ Each external system sits behind a port, so it can be replaced by a real provide
 business logic. See [From simulation to a real system](docs/integration-guide.md).
 
 <p align="center">
-  <img src="assets/Sample_UI.png" alt="LuxeBank screens" width="560"/>
+  <img src="docs/demo/luxebank-demo.gif" alt="Demo: unlock with PIN, home, PromptPay transfer to its slip, cards and profile" width="300"/>
+  &nbsp;&nbsp;
+  <img src="assets/Sample_UI.png" alt="LuxeBank screens" width="420"/>
 </p>
+
+## Try the demo
+
+No Apple Developer account is needed: the app's mock bank runs entirely on the device.
+
+- **Watch:** the [film](docs/demo/luxebank-promo.mp4) at the top, or the recording below it, which walks through PIN
+  unlock, the home screen, a PromptPay transfer to its slip, cards and the profile. Re-record with
+  `scripts/record-demo.sh` and re-render the film with `scripts/make-promo.sh`.
+- **Try it in a browser:** `scripts/build-demo.sh` produces `dist/LuxeBank-demo-simulator.zip`, an unsigned
+  simulator build that services such as [Appetize.io](https://appetize.io) run in any browser. Upload it as an iOS
+  app and share the link.
+- **Run it on a Mac:** follow [Getting started](#getting-started); a free Apple ID is enough for the simulator.
+
+Demo login: national ID `1-2345-67890-12-1`, password `LuxeDemo#2026`, OTP `000000`, then any 6-digit PIN that is
+not a sequence or a repeated digit. Face ID is not available in a browser, so transfers of ฿50,000 or more cannot be
+confirmed there.
 
 ## Features
 
@@ -182,6 +208,7 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 | iOS unit (110+ tests) | View models, repositories, PIN rules, pinning, contrast ratios |
 | iOS UI | Onboarding, history, transfers, bills, cards, profile, offline, compromised device, accessibility audit |
 | Measurements | `scripts/measure-app.sh`: launch, responsiveness, memory, CPU, disk and app size |
+| Demo | `scripts/record-demo.sh` records the walk-through, `scripts/make-promo.sh` renders the film, `scripts/build-demo.sh` builds the browser demo |
 
 Run the UI tests against the real backend with `TEST_RUNNER_LUXEBANK_API=http://127.0.0.1:8080`.
 
@@ -205,7 +232,7 @@ Every pull request runs:
 ├── backend/             Spring Boot API (Kotlin), Flyway migrations, integration tests
 ├── api/openapi.yaml     API contract shared by app and backend
 ├── docs/                Specification, security, hardening and metrics reports
-├── scripts/             Tooling (measure-app.sh)
+├── scripts/             Tooling: measure-app.sh, record-demo.sh, make-promo.sh, build-demo.sh
 ├── docker-compose.yml   Local stack: PostgreSQL, Redis, API
 └── .env.example         Template for local secrets
 ```
