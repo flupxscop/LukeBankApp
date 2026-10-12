@@ -154,6 +154,7 @@ private struct OTPView: View {
             }
             .accessibilityElement()
             .accessibilityLabel(Text("otp.progress \(viewModel.otpCode.count)"))
+            .accessibilityIdentifier("otp.progress")
 
             HStack {
                 Text("otp.reference \(viewModel.challenge?.otpRef ?? "")")
