@@ -55,6 +55,8 @@ Profile and notifications (M5): the profile tab shows the relationship manager (
 
 Hardening (M6): a jailbroken phone (or `-SimulateCompromisedDevice` in Debug) is warned and cannot pay; with no connection (or `-SimulateOffline`) the app shows the last data with an "Offline" badge. Security-test traceability, accessibility and performance results and the UAT checklist are in [docs/hardening-report.md](docs/hardening-report.md).
 
+App quality metrics (stability, speed, resource use) and how to re-measure them: [docs/app-quality-metrics.md](docs/app-quality-metrics.md), `scripts/measure-app.sh`.
+
 Tests (unit + UI onboarding flow):
 
 ```bash

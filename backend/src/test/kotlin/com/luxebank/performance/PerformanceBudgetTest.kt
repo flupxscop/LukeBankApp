@@ -50,7 +50,14 @@ class PerformanceBudgetTest(
         var next = 0
         val transfer = measure(TRANSFERS) { transfer(payers[next++ % payers.size]) }
 
+        // Data per screen on a mobile connection: the home screen and one history page stay small.
+        val dashboardBytes = bytes("/api/v1/dashboard", customer)
+        val historyBytes = bytes("/api/v1/accounts/${customer.primary}/transactions?limit=20", customer)
+
         log.info("NFR-02 p95: dashboard {} ms, history {} ms, transfer {} ms", dashboard, history, transfer)
+        log.info("Payload: dashboard {} bytes, history page {} bytes", dashboardBytes, historyBytes)
+        assertThat(dashboardBytes).isLessThan(DASHBOARD_PAYLOAD_BYTES)
+        assertThat(historyBytes).isLessThan(HISTORY_PAYLOAD_BYTES)
         assertThat(dashboard).isLessThan(READ_BUDGET_MS)
         assertThat(history).isLessThan(READ_BUDGET_MS)
         assertThat(transfer).isLessThan(TRANSFER_BUDGET_MS)
@@ -78,6 +85,15 @@ class PerformanceBudgetTest(
     ) {
         mockMvc.get(path) { header("Authorization", "Bearer ${customer.accessToken}") }.andExpect { status { isOk() } }
     }
+
+    private fun bytes(
+        path: String,
+        customer: BankFixture.Customer,
+    ): Int =
+        mockMvc
+            .get(path) { header("Authorization", "Bearer ${customer.accessToken}") }
+            .andReturn()
+            .response.contentAsByteArray.size
 
     private fun transfer(customer: BankFixture.Customer) {
         val inquiry =
@@ -123,6 +139,8 @@ class PerformanceBudgetTest(
         const val READ_BUDGET_MS = 500L
         const val TRANSFER_BUDGET_MS = 2_000L
         const val NANOS_PER_MS = 1_000_000L
+        const val DASHBOARD_PAYLOAD_BYTES = 50 * 1024
+        const val HISTORY_PAYLOAD_BYTES = 20 * 1024
         const val P95 = 95
         const val PERCENT = 100
     }

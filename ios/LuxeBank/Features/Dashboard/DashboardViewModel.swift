@@ -60,7 +60,7 @@ final class DashboardViewModel {
 
     func load() async {
         do {
-            state = .loaded(try await repository.fetchDashboard())
+            state = .loaded(try await Signposts.measure(.dashboardLoad) { try await repository.fetchDashboard() })
             updatedAt = now()
         } catch {
             // Keep what is on screen (e.g. offline); fail only when there is nothing to show.
