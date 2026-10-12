@@ -1,7 +1,8 @@
 # Local development against docker-compose. Never use these values outside a laptop.
 spring:
   datasource:
-    password: ${DB_PASSWORD:luxebank-local}
+    # From .env (see .env.example); no default.
+    password: ${DB_PASSWORD}
 
 luxebank:
   security:
