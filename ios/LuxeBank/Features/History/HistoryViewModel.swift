@@ -72,7 +72,9 @@ final class HistoryViewModel {
         let requested = query
         if items.isEmpty { state = .loading }
         do {
-            let page = try await repository.transactions(accountID: account.id, query: requested, cursor: nil)
+            let page = try await Signposts.measure(.historyLoad) {
+                try await repository.transactions(accountID: account.id, query: requested, cursor: nil)
+            }
             guard current == generation else { return }
             items = page.items
             totals = page.totals

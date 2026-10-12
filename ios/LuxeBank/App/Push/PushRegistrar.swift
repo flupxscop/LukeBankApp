@@ -45,6 +45,8 @@ extension PushRegistrar: UNUserNotificationCenterDelegate {
 final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = PushRegistrar.shared
+        // Daily stability, speed and resource metrics from iOS (real devices only).
+        AppMetricsCollector.shared.start()
         return true
     }
 

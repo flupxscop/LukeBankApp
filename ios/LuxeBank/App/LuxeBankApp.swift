@@ -3,12 +3,18 @@ import SwiftUI
 @main
 struct LuxeBankApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    private let environment = AppEnvironment.makeDefault()
+    private let environment: AppEnvironment
+
+    init() {
+        Signposts.beginStartup()
+        environment = AppEnvironment.makeDefault()
+    }
 
     var body: some Scene {
         WindowGroup {
             RootView(environment: environment)
                 .preferredColorScheme(.light)
+                .onAppear(perform: Signposts.endStartup)
         }
     }
 }

@@ -116,6 +116,10 @@ final class SessionManager {
     }
 
     private func login(method: LoginMethod, pin: String?, reason: String) async throws {
+        try await Signposts.measure(.unlock) { try await performLogin(method: method, pin: pin, reason: reason) }
+    }
+
+    private func performLogin(method: LoginMethod, pin: String?, reason: String) async throws {
         guard let deviceID else { throw APIError.unauthorized }
         do {
             let challenge = try await repository.challenge(deviceID: deviceID)

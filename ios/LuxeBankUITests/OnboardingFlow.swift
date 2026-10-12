@@ -59,10 +59,11 @@ struct OnboardingFlow {
         return XCTWaiter.wait(for: [focused], timeout: timeout) == .completed
     }
 
-    /// Taps the digits. Where the screen shows PIN dots, each tap is confirmed by the dots' progress and repeated
-    /// if the keypad dropped it (slow CI runners); the last digit submits, so it is not checked.
+    /// Taps the digits. Where the screen shows progress (PIN dots or OTP boxes), each tap is confirmed by it and
+    /// repeated if the keypad dropped it (slow CI runners); the last digit submits, so it is not checked.
     func enter(_ digits: String) {
-        let dots = app.otherElements["pin.dots"]
+        let otp = app.otherElements["otp.progress"]
+        let dots = otp.exists ? otp : app.otherElements["pin.dots"]
         for (index, digit) in digits.enumerated() {
             let key = app.buttons["pinpad.\(digit)"]
             key.tap()

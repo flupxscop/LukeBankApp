@@ -65,6 +65,9 @@ These are deliberately not built in the simulation. The schema and code leave ro
   The app also needs the Push Notifications capability (`aps-environment`) in a paid team's provisioning profile.
   Keep push text free of balances; it shows on the lock screen. For volume, move delivery from the in-process
   `@Async` listener to an outbox table plus a worker so a restart never loses a notification.
+- **App health telemetry**: implement `TelemetrySink` (iOS, `Core/Telemetry/AppMetrics.swift`) to send the MetricKit
+  `AppHealthReport` (counts and durations only) to the observability backend, and alert on crash-free sessions and
+  hang rate per release (docs/app-quality-metrics.md).
 - **RM chat** behind a messaging port (the RM's CRM or a chat vendor) instead of the on-device simulation.
 - **Encrypting revealed card details to the device** (ECIES to a key-agreement key in the Secure Enclave).
 
